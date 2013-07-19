@@ -56,7 +56,6 @@ function Server(secure, options, callback) {
 util.inherits(Server, events.EventEmitter)
 
 // Starts listening for connections
-// options is an object that will be passed to net.listen() or tls.listen()
 // callback is a function that will be added as "connection" listener
 Server.prototype.listen = function (port, host, callback) {
 	var that = this

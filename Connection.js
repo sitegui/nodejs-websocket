@@ -44,8 +44,8 @@ function Connection(socket, parent, callback) {
 			that.outStream = null
 		}
 	})
-	socket.on("error", function () {
-		// Nothing to do, just let the connection be closed
+	socket.on("error", function (err) {
+		that.emit("error", err)
 	})
 	if (!this.server)
 		socket.on("connect", function () {
