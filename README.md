@@ -19,6 +19,8 @@ var server = ws.createServer(function (conn) {
 }).listen(8001)
 ```
 
+Se other examples inside the folder samples
+
 # ws
 The main object, returned by `require("./websocket")`.
 
@@ -26,14 +28,14 @@ The main object, returned by `require("./websocket")`.
 Returns a new `Server` object.
 
 The `options` is an optional object that will be handed to net.createServer() to create an ordinary socket.
-If it has a property called "secure" with value `true`, tls.createServer() will be used insted.
+If it has a property called "secure" with value `true`, tls.createServer() will be used instead.
 
 The `callback` is a function which is automatically added to the `"connection"` event.
 
 ## ws.connect(URL, [options], [callback])
 Returns a new `Connection` object, representing a websocket client connection
 
-`URL` is a string with the format "ws://localhost:8000/chat" (the port can be ommited)
+`URL` is a string with the format "ws://localhost:8000/chat" (the port can be omitted)
 
 `options` is an object that will be passed to net.connect() (or tls.connect() if the protocol is "wss:").
 The properties "host" and "port" will be read from the `URL`
@@ -87,20 +89,19 @@ Text frames are implemented as simple send function and receive event.
 Binary frames are implemented as streams: when you receive binary data, you get a ReadableStream; to send binary data, you must ask for a WritableStream and write into it.
 The binary data will be divided into frames and be sent over the socket.
 
-Since the websocket does not allow different fragments within the same connection, you cannot send text data while sending binary data.
-If you try to do so, the connection will emit an "error" event
+You cannot send text data while sending binary data. If you try to do so, the connection will emit an "error" event
 
 ## connection.sendText(str, [callback])
-Sends a given string to the other side. You can't send text data in the middle of a binary transmition.
+Sends a given string to the other side. You can't send text data in the middle of a binary transmission.
 
 `callback` will be added as a listener to write operation over the socket
 
 ## connection.beginBinary()
 Asks the connection to begin transmitting binary data. Returns a WritableStream.
-The binary trasmition will end when the WritableStream finishs (like when you call .end on it)
+The binary transmission will end when the WritableStream finishes (like when you call .end on it)
 
 ## connection.sendBinary(data, [callback])
-Sends a single chunck of binary data (like calling connection.beginBinary().end(data))
+Sends a single chunk of binary data (like calling connection.beginBinary().end(data))
 
 `callback` will be added as a listener to write operation over the socket
 
@@ -124,17 +125,20 @@ One of these constants, representing the current state of the connection. Only a
 Stores the OutStream object returned by connection.beginBinary(). null if there is no current binary data beeing sent.
 
 ## connection.path
-A string representing the path to which the connection was made (example: "/chat")
+For a connection accepted by a server, it is a string representing the path to which the connection was made (example: "/chat"). null otherwise
 
 ## Event: 'close(code, reason)'
+Emitted when the connection is closed by any side
 
 ## Event: 'error(err)'
+Emitted in case of error (like trying to send text data while still sending binary data)
 
 ## Event: 'text(str)'
+Emitted when a text is received. `str` is a string
 
 ## Event: 'binary(inStream)'
+Emitted when the beginning of binary data is received. `inStream` is a ReadableStream
 
 ## Event: 'connect()'
-
-## connection.
+Emitted when the connection is fully established (after the handshake)
 
