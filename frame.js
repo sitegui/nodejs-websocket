@@ -1,6 +1,4 @@
-/*
-Utility functions for creating frames
-*/
+// Utility functions for creating frames
 
 // Creates a text frame
 // data is a string

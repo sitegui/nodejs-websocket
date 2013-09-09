@@ -1,15 +1,14 @@
-/*
-Simple wrapper for stream.Readable, used for receiving binary data
-*/
-
-var util = require("util")
-var stream = require("stream")
+// Simple wrapper for stream.Readable, used for receiving binary data
 
 // Represents the readable stream for binary frames
 // Events: readable(), end()
 function InStream() {
 	stream.Readable.call(this)
 }
+
+module.exports = InStream
+var util = require("util")
+var stream = require("stream")
 
 // Extends the basic readable stream and implement _read
 util.inherits(InStream, stream.Readable)
@@ -25,5 +24,3 @@ InStream.prototype.addData = function (data) {
 InStream.prototype.end = function () {
 	this.push(null)
 }
-
-module.exports = InStream

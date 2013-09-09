@@ -1,10 +1,4 @@
-/*
-Simple wrapper for stream.Writable, used for sending binary data
-*/
-
-var util = require("util")
-var stream = require("stream")
-var frame = require("./frame.js")
+// Simple wrapper for stream.Writable, used for sending binary data
 
 // Represents the writable stream for binary frames
 // Events: 
@@ -22,6 +16,11 @@ function OutStream(connection, minSize) {
 		that.connection.outStream = null
 	})
 }
+
+module.exports = OutStream
+var util = require("util")
+var stream = require("stream")
+var frame = require("./frame.js")
 
 // Extends the basic writable stream and implements _write
 util.inherits(OutStream, stream.Writable)
@@ -41,5 +40,3 @@ OutStream.prototype._write = function (chunk, encoding, callback) {
 	} else
 		callback()
 }
-
-module.exports = OutStream

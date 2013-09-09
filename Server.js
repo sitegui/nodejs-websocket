@@ -1,12 +1,4 @@
-/*
-Represents a websocket server
-*/
-
-var util = require("util")
-var net = require("net")
-var tls = require("tls")
-var Connection = require("./Connection.js")
-var events = require("events")
+// Represents a websocket server
 
 // new Server() creates a new ws server and starts listening for new connections
 // Events: listening(), close(), error(err), connection(conn)
@@ -52,6 +44,13 @@ function Server(secure, options, callback) {
 		this.on("connection", callback)
 }
 
+module.exports = Server
+var util = require("util")
+var net = require("net")
+var tls = require("tls")
+var Connection = require("./Connection.js")
+var events = require("events")
+
 // Makes Server also an EventEmitter
 util.inherits(Server, events.EventEmitter)
 
@@ -74,5 +73,3 @@ Server.prototype.listen = function (port, host, callback) {
 	
 	return this
 }
-
-module.exports = Server

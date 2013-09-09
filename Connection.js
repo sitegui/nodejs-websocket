@@ -1,14 +1,4 @@
-/*
-Represents a connection (both client and server sides)
-*/
-
-var util = require("util")
-var events = require("events")
-var crypto = require("crypto")
-var InStream = require("./InStream.js")
-var OutStream = require("./OutStream.js")
-var frame = require("./frame.js")
-var Server = require("./Server.js")
+// Represents a connection (both client and server sides)
 
 // socket is a net or tls socket
 // parent can be a Server or, in case of client connection, a string with the path to connect to
@@ -56,6 +46,15 @@ function Connection(socket, parent, callback) {
 	events.EventEmitter.call(this)
 	this.on("connect", callback)
 }
+
+module.exports = Connection
+var util = require("util")
+var events = require("events")
+var crypto = require("crypto")
+var InStream = require("./InStream.js")
+var OutStream = require("./OutStream.js")
+var frame = require("./frame.js")
+var Server = require("./Server.js")
 
 // Minimum size of a pack of binary data to send in a single frame
 Connection.binaryFragmentation = 512*1024 // .5 MiB
@@ -391,5 +390,3 @@ Connection.prototype.processCloseFrame = function (payload) {
 	this.readyState = this.CLOSED
 	this.emit("close", code, reason)
 }
-
-module.exports = Connection
