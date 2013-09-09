@@ -2,9 +2,9 @@
 A nodejs module for websocket server and client
 
 # How to use it
-Put all files in a folder called "websocket", and:
+Install with `npm install nodejs-websocket` or put all files in a folder called "nodejs-websocket", and:
 ```javascript
-var ws = require("./websocket")
+var ws = require("nodejs-websocket")
 
 // Scream server example: "hi" -> "HI!!!"
 var server = ws.createServer(function (conn) {
@@ -22,7 +22,7 @@ var server = ws.createServer(function (conn) {
 Se other examples inside the folder samples
 
 # ws
-The main object, returned by `require("./websocket")`.
+The main object, returned by `require("nodejs-websocket")`.
 
 ## ws.createServer([options], [callback])
 Returns a new `Server` object.
