@@ -1,5 +1,7 @@
 // Represents a websocket server
 
+function nop() {}
+
 // new Server() creates a new ws server and starts listening for new connections
 // Events: listening(), close(), error(err), connection(conn)
 // secure is a boolean that indicates if it should use tls
@@ -16,6 +18,7 @@ function Server(secure, options, callback) {
 	var onConnection = function (socket) {
 		var conn = new Connection(socket, that, function () {
 			that.connections.push(conn)
+			conn.removeListener("error", nop)
 			that.emit("connection", conn)
 		})
 		conn.on("close", function () {
@@ -23,6 +26,9 @@ function Server(secure, options, callback) {
 			if (pos != -1)
 				that.connections.splice(pos, 1)
 		})
+		
+		// Ignore errors before the connection is established
+		conn.on("error", nop)
 	}
 	
 	if (secure)
