@@ -1,3 +1,5 @@
+"use strict"
+
 // Utility functions for creating frames
 
 // Creates a text frame

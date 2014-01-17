@@ -45,6 +45,11 @@ The properties "host" and "port" will be read from the `URL`
 ## ws.setBinaryFragmentation(bytes)
 Sets the minimum size of a pack of binary data to send in a single frame (default: 512kiB)
 
+## ws.setMaxBufferLength(bytes)
+Set the maximum size the internal Buffer can grow (default: 2MiB)
+If at any time it stays bigger than this, the connection will be closed with code 1009
+This is a security measure, to avoid memory attacks
+
 # Server
 The class that represents a websocket server, much like a HTTP server
 

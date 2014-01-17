@@ -1,3 +1,5 @@
+"use strict"
+
 // Simple wrapper for stream.Writable, used for sending binary data
 
 // Represents the writable stream for binary frames

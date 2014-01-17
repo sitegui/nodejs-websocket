@@ -1,3 +1,5 @@
+"use strict"
+
 // Represents a connection (both client and server sides)
 
 // socket is a net or tls socket
@@ -21,7 +23,6 @@ function Connection(socket, parent, callback) {
 		that.doRead()
 	})
 	socket.on("close", function () {
-		var pos
 		if (that.readyState == that.CONNECTING || that.readyState == that.OPEN)
 			that.emit("close", 1006, "")
 		that.readyState = this.CLOSED
@@ -54,10 +55,14 @@ var crypto = require("crypto")
 var InStream = require("./InStream.js")
 var OutStream = require("./OutStream.js")
 var frame = require("./frame.js")
-var Server = require("./Server.js")
 
 // Minimum size of a pack of binary data to send in a single frame
 Connection.binaryFragmentation = 512*1024 // .5 MiB
+
+// The maximum size the internal Buffer can grow
+// If at any time it stays bigger than this, the connection will be closed with code 1009
+// This is a security measure, to avoid memory attacks
+Connection.maxBufferLength = 2*1024*1024 // 2 MiB
 
 // Makes Connection also an EventEmitter
 util.inherits(Connection, events.EventEmitter)
@@ -83,7 +88,7 @@ Connection.prototype.sendText = function (str, callback) {
 Connection.prototype.beginBinary = function () {
 	if (this.readyState == this.OPEN) {
 		if (!this.outStream)
-			return this.outStream = new OutStream(this, Connection.binaryFragmentation)
+			return (this.outStream = new OutStream(this, Connection.binaryFragmentation))
 		this.emit("error", new Error("You can't send more binary frames until you finish sending the previous binary frames"))
 	}
 	this.emit("error", new Error("You can't write to a non-open connection"))
@@ -128,6 +133,9 @@ Connection.prototype.doRead = function () {
 	if (this.readyState == this.CONNECTING) {
 		// Do the handshake and try to connect
 		this.buffer += buffer.toString()
+		if (this.buffer.length > Connection.maxBufferLength)
+			// Too big for a handshake
+			return this.socket.end(this.server ? "HTTP/1.1 400 Bad Request\r\n\r\n" : undefined)
 		if (this.buffer.substr(-4) != "\r\n\r\n")
 			// Wait for more data
 			return
@@ -143,7 +151,11 @@ Connection.prototype.doRead = function () {
 		this.buffer = Buffer.concat([this.buffer, buffer], this.buffer.length+buffer.length)
 		while ((temp=this.extractFrame()) === true);
 		if (temp === false)
+			// Protocol error
 			this.close(1002)
+		else if (this.buffer.length > Connection.maxBufferLength)
+			// Frame too big
+			this.close(1009)
 	}
 }
 
@@ -168,7 +180,7 @@ Connection.prototype.startHandshake = function () {
 // Returns if the handshake was sucessful
 // If not, the connection must be closed
 Connection.prototype.checkHandshake = function (lines) {
-	var headers, i, temp, key, response, sha1
+	var headers, i, temp, key, sha1
 	
 	// First line
 	if (lines.length < 4)
@@ -207,7 +219,7 @@ Connection.prototype.checkHandshake = function (lines) {
 // Returns if the handshake was sucessful
 // If not, the connection must be closed with error 400-Bad Request
 Connection.prototype.answerHandshake = function (lines) {
-	var path, headers, i, temp, key, response, sha1
+	var path, headers, i, temp, key, sha1
 	
 	// First line
 	if (lines.length < 6)
@@ -254,7 +266,7 @@ Connection.prototype.answerHandshake = function (lines) {
 // Returns undefined in case there isn't enough data to catch a frame
 // Returns true in case the frame was successfully fetched and executed
 Connection.prototype.extractFrame = function () {
-	var fin, opcode, B, HB, mask, len, payload, start, mask, i
+	var fin, opcode, B, HB, mask, len, payload, start, i, hasMask
 	
 	if (this.buffer.length < 2)
 		return

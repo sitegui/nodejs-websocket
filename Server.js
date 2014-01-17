@@ -1,3 +1,5 @@
+"use strict"
+
 // Represents a websocket server
 
 function nop() {}

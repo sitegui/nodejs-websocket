@@ -1,3 +1,5 @@
+"use strict"
+
 var Server = require("./Server.js")
 var Connection = require("./Connection.js")
 var net = require("net")
@@ -40,6 +42,11 @@ exports.connect = function (URL, options, callback) {
 // Set the minimum size of a pack of binary data to send in a single frame
 exports.setBinaryFragmentation = function (bytes) {
 	Connection.binaryFragmentation = bytes
+}
+
+// Set the maximum size the internal Buffer can grow, to avoid memory attacks
+exports.setMaxBufferLength = function (bytes) {
+	Connection.maxBufferLength = bytes
 }
 
 // Parse the WebSocket URL
