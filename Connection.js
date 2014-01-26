@@ -22,7 +22,16 @@ function Connection(socket, parent, callback) {
 	socket.on("readable", function () {
 		that.doRead()
 	})
-	socket.on("close", function () {
+	socket.on("error", function (err) {
+		that.emit("error", err)
+	})
+	if (!this.server)
+		socket.on("connect", function () {
+			that.startHandshake()
+		})
+	
+	// Close listeners
+	var onclose = function () {
 		if (that.readyState == that.CONNECTING || that.readyState == that.OPEN)
 			that.emit("close", 1006, "")
 		that.readyState = this.CLOSED
@@ -34,14 +43,9 @@ function Connection(socket, parent, callback) {
 			that.outStream.end()
 			that.outStream = null
 		}
-	})
-	socket.on("error", function (err) {
-		that.emit("error", err)
-	})
-	if (!this.server)
-		socket.on("connect", function () {
-			that.startHandshake()
-		})
+	}
+	socket.once("close", onclose)
+	socket.once("finish", onclose)
 	
 	// super constructor
 	events.EventEmitter.call(this)
