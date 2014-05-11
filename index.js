@@ -10,7 +10,7 @@ var url = require("url")
 // options is an object to be passed to net.createServer() or tls.createServer(), with the additional property "secure" (a boolean)
 // callback will be added as "connection" listener
 exports.createServer = function (options, callback) {
-	if (typeof options == "function")
+	if (typeof options == "function" || !arguments.length)
 		return new Server(false, options)
 	return new Server(Boolean(options.secure), options, callback)
 }

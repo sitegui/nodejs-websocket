@@ -1,6 +1,6 @@
 {
   "name": "nodejs-websocket",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "Sitegui <sitegui@sitegui.com.br>",
   "description": "Basic server&client approach to websocket (text and binary frames)",
   "main": "./index.js",
@@ -13,11 +13,15 @@
     "websocket-server",
     "websocket-client"
   ],
-  "license": "GPL",
+  "license": "MIT",
   "engines": {
     "node": ">=0.10"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -R spec -b"
+  },
+  "devDependencies": {
+    "mocha": "~1.18.2",
+    "should": "~3.3.1"
   }
 }
