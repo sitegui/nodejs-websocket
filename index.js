@@ -63,7 +63,7 @@ function parseWSURL(URL) {
 	else
 		throw new Error("Invalid protocol "+parts.protocol+". It must be ws or wss")
 	
-	parts.port = parts.port || (secure ? 80 : 443)
+	parts.port = parts.port || (secure ? 443 : 80)
 	parts.path = parts.path || "/"
 	
 	return {path: parts.path, port: parts.port, secure: secure, host: parts.hostname}
