@@ -168,13 +168,13 @@ Connection.prototype.startHandshake = function () {
 	key = new Buffer(16)
 	for (i=0; i<16; i++)
 		key[i] = Math.floor(Math.random()*256)
-	this.key = key.toString("base64");
+	this.key = key.toString("base64")
 	str = "GET "+this.path+" HTTP/1.1\r\n"+
 		"Host: "+this.host+"\r\n"+
 		"Upgrade: websocket\r\n"+
 		"Connection: Upgrade\r\n"+
 		"Sec-WebSocket-Key: "+this.key+"\r\n"+
-		"Sec-WebSocket-Version: 13\r\n\r\n";
+		"Sec-WebSocket-Version: 13\r\n\r\n"
 	this.socket.write(str)
 }
 
