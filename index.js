@@ -36,7 +36,7 @@ exports.connect = function (URL, options, callback) {
 	else
 		socket = net.connect(options)
 	
-	return new Connection(socket, URL.path, callback)
+	return new Connection(socket, URL, callback)
 }
 
 // Set the minimum size of a pack of binary data to send in a single frame

@@ -6,16 +6,17 @@
 // parent can be a Server or, in case of client connection, a string with the path to connect to
 // callback will be added as a listener to "connect"
 // Events: close(code, reason), error(err), text(str), binary(inStream), connect()
-function Connection(socket, parent, callback) {
+function Connection(socket, url, callback) {
 	var that = this
 	
+	this.host = url.host
 	this.socket = socket
-	this.server = typeof parent == "string" ? null : parent
+	this.server = typeof url.path == "string" ? null : url.path
 	this.readyState = this.CONNECTING
 	this.buffer = "" // string before handshake, Buffer after that
 	this.frameBuffer = null // string for text frames and InStream for binary frames
 	this.outStream = null // current allocated OutStream object for sending binary frames
-	this.path = typeof parent == "string" ? parent : null
+	this.path = typeof url.path == "string" ? url.path : null
 	this.key = null // the Sec-WebSocket-Key header
 	
 	// Set listeners
@@ -26,9 +27,7 @@ function Connection(socket, parent, callback) {
 		that.emit("error", err)
 	})
 	if (!this.server)
-		socket.on("connect", function () {
-			that.startHandshake()
-		})
+		that.startHandshake()
 	
 	// Close listeners
 	var onclose = function () {
@@ -169,13 +168,13 @@ Connection.prototype.startHandshake = function () {
 	key = new Buffer(16)
 	for (i=0; i<16; i++)
 		key[i] = Math.floor(Math.random()*256)
-	this.key = key.toString("base64")
+	this.key = key.toString("base64");
 	str = "GET "+this.path+" HTTP/1.1\r\n"+
-		"Host: "+this.parent+"\r\n"+
+		"Host: "+this.host+"\r\n"+
 		"Upgrade: websocket\r\n"+
-		"Connection: Upgrade\r\n"+
+		"Connection: UCpgrade\r\n"+
 		"Sec-WebSocket-Key: "+this.key+"\r\n"+
-		"Sec-WebSocket-Version: 13\r\n\r\n"
+		"Sec-WebSocket-Version: 13\r\n\r\n";
 	this.socket.write(str)
 }
 
