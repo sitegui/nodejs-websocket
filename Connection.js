@@ -172,7 +172,7 @@ Connection.prototype.startHandshake = function () {
 	str = "GET "+this.path+" HTTP/1.1\r\n"+
 		"Host: "+this.host+"\r\n"+
 		"Upgrade: websocket\r\n"+
-		"Connection: UCpgrade\r\n"+
+		"Connection: Upgrade\r\n"+
 		"Sec-WebSocket-Key: "+this.key+"\r\n"+
 		"Sec-WebSocket-Version: 13\r\n\r\n";
 	this.socket.write(str)
