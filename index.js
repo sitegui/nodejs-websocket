@@ -36,7 +36,7 @@ exports.connect = function (URL, options, callback) {
 	else
 		socket = net.connect(options)
 	
-	return new Connection(socket, URL.path, callback)
+	return new Connection(socket, URL, callback)
 }
 
 // Set the minimum size of a pack of binary data to send in a single frame
@@ -63,7 +63,7 @@ function parseWSURL(URL) {
 	else
 		throw new Error("Invalid protocol "+parts.protocol+". It must be ws or wss")
 	
-	parts.port = parts.port || (secure ? 80 : 443)
+	parts.port = parts.port || (secure ? 443 : 80)
 	parts.path = parts.path || "/"
 	
 	return {path: parts.path, port: parts.port, secure: secure, host: parts.hostname}

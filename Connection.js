@@ -6,30 +6,48 @@
 // parent can be a Server or, in case of client connection, a string with the path to connect to
 // callback will be added as a listener to "connect"
 // Events: close(code, reason), error(err), text(str), binary(inStream), connect()
-function Connection(socket, parent, callback) {
+function Connection(socket, parentOrUrl, callback) {
 	var that = this
+
+	if (parentOrUrl instanceof Server) {
+		// Server-side connection
+		this.server = parentOrUrl
+		this.path = null
+	} else {
+		// Client-side
+		this.host = parentOrUrl.host
+		this.server = null
+		this.path = parentOrUrl.path
+	}
 	
 	this.socket = socket
-	this.server = typeof parent == "string" ? null : parent
 	this.readyState = this.CONNECTING
 	this.buffer = "" // string before handshake, Buffer after that
 	this.frameBuffer = null // string for text frames and InStream for binary frames
 	this.outStream = null // current allocated OutStream object for sending binary frames
-	this.path = typeof parent == "string" ? parent : null
 	this.key = null // the Sec-WebSocket-Key header
 	
 	// Set listeners
 	socket.on("readable", function () {
 		that.doRead()
 	})
+
 	socket.on("error", function (err) {
 		that.emit("error", err)
 	})
-	if (!this.server)
-		socket.on("connect", function () {
-			that.startHandshake()
-		})
-	
+
+	if (!this.server) {
+		if (socket instanceof tls.constructor) {
+			socket.on('secureConnect', function(){
+				that.startHandshake();
+			});
+		} else {
+			socket.on('connect', function(){
+				that.startHandshake();
+			});
+		}
+	}
+
 	// Close listeners
 	var onclose = function () {
 		if (that.readyState == that.CONNECTING || that.readyState == that.OPEN)
@@ -59,6 +77,8 @@ var crypto = require("crypto")
 var InStream = require("./InStream.js")
 var OutStream = require("./OutStream.js")
 var frame = require("./frame.js")
+var Server = require("./Server.js")
+var tls = require('tls')
 
 // Minimum size of a pack of binary data to send in a single frame
 Connection.binaryFragmentation = 512*1024 // .5 MiB
@@ -130,36 +150,41 @@ Connection.prototype.doRead = function () {
 	
 	// Fetches the data
 	buffer = this.socket.read()
-	if (!buffer)
+	if (!buffer) {
 		// Waits for more data
 		return
+	}
 	
 	if (this.readyState == this.CONNECTING) {
 		// Do the handshake and try to connect
 		this.buffer += buffer.toString()
-		if (this.buffer.length > Connection.maxBufferLength)
+		if (this.buffer.length > Connection.maxBufferLength) {
 			// Too big for a handshake
 			return this.socket.end(this.server ? "HTTP/1.1 400 Bad Request\r\n\r\n" : undefined)
-		if (this.buffer.substr(-4) != "\r\n\r\n")
+		}
+		if (this.buffer.substr(-4) != "\r\n\r\n") {
 			// Wait for more data
 			return
+		}
 		temp = this.buffer.split("\r\n")
 		if (this.server ? this.answerHandshake(temp) : this.checkHandshake(temp)) {
 			this.buffer = new Buffer(0)
 			this.readyState = this.OPEN
 			this.emit("connect")
-		} else
+		} else {
 			this.socket.end(this.server ? "HTTP/1.1 400 Bad Request\r\n\r\n" : undefined)
+		}
 	} else if (this.readyState != this.CLOSED) {
 		// Save to the internal buffer and try to read as many frames as possible
 		this.buffer = Buffer.concat([this.buffer, buffer], this.buffer.length+buffer.length)
 		while ((temp=this.extractFrame()) === true);
-		if (temp === false)
+		if (temp === false) {
 			// Protocol error
 			this.close(1002)
-		else if (this.buffer.length > Connection.maxBufferLength)
+		} else if (this.buffer.length > Connection.maxBufferLength) {
 			// Frame too big
 			this.close(1009)
+		}
 	}
 }
 
@@ -171,7 +196,7 @@ Connection.prototype.startHandshake = function () {
 		key[i] = Math.floor(Math.random()*256)
 	this.key = key.toString("base64")
 	str = "GET "+this.path+" HTTP/1.1\r\n"+
-		"Host: "+this.parent+"\r\n"+
+		"Host: "+this.host+"\r\n"+
 		"Upgrade: websocket\r\n"+
 		"Connection: Upgrade\r\n"+
 		"Sec-WebSocket-Key: "+this.key+"\r\n"+
