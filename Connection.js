@@ -7,17 +7,19 @@
 // callback will be added as a listener to "connect"
 // Events: close(code, reason), error(err), text(str), binary(inStream), connect()
 function Connection(socket, parentOrUrl, callback) {
-	var that = this
+	var that = this,
+		connectEvent
 
 	if (parentOrUrl instanceof Server) {
 		// Server-side connection
 		this.server = parentOrUrl
 		this.path = null
+		this.host = null
 	} else {
 		// Client-side
-		this.host = parentOrUrl.host
 		this.server = null
 		this.path = parentOrUrl.path
+		this.host = parentOrUrl.host
 	}
 	
 	this.socket = socket
@@ -37,15 +39,10 @@ function Connection(socket, parentOrUrl, callback) {
 	})
 
 	if (!this.server) {
-		if (socket instanceof tls.constructor) {
-			socket.on('secureConnect', function(){
-				that.startHandshake();
-			});
-		} else {
-			socket.on('connect', function(){
-				that.startHandshake();
-			});
-		}
+		connectEvent = socket.constructor.name === "CleartextStream" ? "secureConnect" : "connect"
+		socket.on(connectEvent, function() {
+			that.startHandshake()
+		})
 	}
 
 	// Close listeners
@@ -78,7 +75,6 @@ var InStream = require("./InStream.js")
 var OutStream = require("./OutStream.js")
 var frame = require("./frame.js")
 var Server = require("./Server.js")
-var tls = require('tls')
 
 // Minimum size of a pack of binary data to send in a single frame
 Connection.binaryFragmentation = 512*1024 // .5 MiB
