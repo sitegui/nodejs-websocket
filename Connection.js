@@ -10,35 +10,42 @@ function Connection(socket, parentOrUrl, callback) {
 	var that = this
 
 	if (parentOrUrl instanceof Server) {
-	    // Server-side connection
-	    this.server = parentOrUrl
-	    this.path = null
+		// Server-side connection
+		this.server = parentOrUrl
+		this.path = null
 	} else {
-	    // Client-side
-	    this.host = parentOrUrl.host
-	    this.server = null
-	    this.path = parentOrUrl.path
+		// Client-side
+		this.host = parentOrUrl.host
+		this.server = null
+		this.path = parentOrUrl.path
 	}
 	
-	// this.host = url.host
 	this.socket = socket
-	// this.server = typeof url.path == "string" ? null : url.path
 	this.readyState = this.CONNECTING
 	this.buffer = "" // string before handshake, Buffer after that
 	this.frameBuffer = null // string for text frames and InStream for binary frames
 	this.outStream = null // current allocated OutStream object for sending binary frames
-	// this.path = typeof url.path == "string" ? url.path : null
 	this.key = null // the Sec-WebSocket-Key header
 	
 	// Set listeners
 	socket.on("readable", function () {
 		that.doRead()
 	})
+
 	socket.on("error", function (err) {
 		that.emit("error", err)
 	})
+
 	if (!this.server) {
-		that.startHandshake()
+		if (socket instanceof tls.constructor) {
+			socket.on('secureConnect', function(){
+				that.startHandshake();
+			});
+		} else {
+			socket.on('connect', function(){
+				that.startHandshake();
+			});
+		}
 	}
 
 	// Close listeners
@@ -71,6 +78,7 @@ var InStream = require("./InStream.js")
 var OutStream = require("./OutStream.js")
 var frame = require("./frame.js")
 var Server = require("./Server.js")
+var tls = require('tls')
 
 // Minimum size of a pack of binary data to send in a single frame
 Connection.binaryFragmentation = 512*1024 // .5 MiB
