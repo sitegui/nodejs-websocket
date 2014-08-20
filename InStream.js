@@ -1,27 +1,44 @@
-"use strict"
+/**
+ * @file Simple wrapper for stream.Readable, used for receiving binary data
+ */
+'use strict'
 
-// Simple wrapper for stream.Readable, used for receiving binary data
+var util = require('util'),
+	stream = require('stream')
 
-// Represents the readable stream for binary frames
-// Events: readable(), end()
+/**
+ * Represents the readable stream for binary frames
+ * @class
+ * @event readable
+ * @event end
+ */
 function InStream() {
 	stream.Readable.call(this)
 }
 
 module.exports = InStream
-var util = require("util")
-var stream = require("stream")
 
-// Extends the basic readable stream and implement _read
 util.inherits(InStream, stream.Readable)
+
+/**
+ * No logic here, the pushs are made outside _read
+ * @private
+ */
 InStream.prototype._read = function () {}
 
-// Add more data to the stream and fires "readable" event
+/**
+ * Add more data to the stream and fires "readable" event
+ * @param {Buffer} data
+ * @private
+ */
 InStream.prototype.addData = function (data) {
 	this.push(data)
 }
 
-// Indicates there is no more data to add to the stream
+/**
+ * Indicates there is no more data to add to the stream
+ * @private
+ */
 InStream.prototype.end = function () {
 	this.push(null)
 }
