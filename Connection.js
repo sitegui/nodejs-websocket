@@ -285,7 +285,7 @@ Connection.prototype.checkHandshake = function (lines) {
 		return false
 	}
 	key = headers['sec-websocket-accept']
-
+	this.headers = headers
 	// Check the key
 	sha1 = crypto.createHash('sha1')
 	sha1.end(this.key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
@@ -340,7 +340,7 @@ Connection.prototype.answerHandshake = function (lines) {
 	}
 
 	this.key = headers['sec-websocket-key']
-
+	this.headers = headers
 	// Build and send the response
 	sha1 = crypto.createHash('sha1')
 	sha1.end(this.key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
