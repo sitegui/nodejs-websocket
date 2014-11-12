@@ -45,6 +45,7 @@ function Connection(socket, parentOrUrl, callback) {
 	this.frameBuffer = null // string for text frames and InStream for binary frames
 	this.outStream = null // current allocated OutStream object for sending binary frames
 	this.key = null // the Sec-WebSocket-Key header
+	this.headers = {} // read only map of header names and values. Header names are lower-cased
 
 	// Set listeners
 	socket.on('readable', function () {
@@ -245,13 +246,30 @@ Connection.prototype.startHandshake = function () {
 }
 
 /**
+ * Read headers from HTTP protocol
+ * Update the Connection#headers property
+ * @param {string[]} lines one for each '\r\n'-separated HTTP request line
+ */
+Connection.prototype.readHeaders = function (lines) {
+	var i, match
+
+	// Extract all headers
+	// Ignore bad-formed lines and ignore the first line (HTTP header)
+	for (i = 1; i < lines.length; i++) {
+		if ((match = lines[i].match(/^([a-z-]+): (.+)$/i))) {
+			this.headers[match[1].toLowerCase()] = match[2]
+		}
+	}
+}
+
+/**
  * Process and check a handshake answered by a server
  * @param {string[]} lines one for each '\r\n'-separated HTTP request line
  * @returns {boolean} if the handshake was sucessful. If not, the connection must be closed
  * @private
  */
 Connection.prototype.checkHandshake = function (lines) {
-	var headers, i, temp, key, sha1
+	var key, sha1
 
 	// First line
 	if (lines.length < 4) {
@@ -262,30 +280,20 @@ Connection.prototype.checkHandshake = function (lines) {
 	}
 
 	// Extract all headers
-	headers = {}
-	for (i = 1; i < lines.length; i++) {
-		if (!lines[i].trim()) {
-			continue
-		}
-		temp = lines[i].match(/^([a-z-]+): (.+)$/i)
-		if (!temp) {
-			return false
-		}
-		headers[temp[1].toLowerCase()] = temp[2]
-	}
+	this.readHeaders(lines)
 
 	// Validate necessary headers
-	if (!('upgrade' in headers) ||
-		!('sec-websocket-accept' in headers) ||
-		!('connection' in headers)) {
+	if (!('upgrade' in this.headers) ||
+		!('sec-websocket-accept' in this.headers) ||
+		!('connection' in this.headers)) {
 		return false
 	}
-	if (headers.upgrade.toLowerCase() !== 'websocket' ||
-		headers.connection.toLowerCase().split(', ').indexOf('upgrade') === -1) {
+	if (this.headers.upgrade.toLowerCase() !== 'websocket' ||
+		this.headers.connection.toLowerCase().split(', ').indexOf('upgrade') === -1) {
 		return false
 	}
-	key = headers['sec-websocket-accept']
-	this.headers = headers
+	key = this.headers['sec-websocket-accept']
+
 	// Check the key
 	sha1 = crypto.createHash('sha1')
 	sha1.end(this.key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
@@ -302,7 +310,7 @@ Connection.prototype.checkHandshake = function (lines) {
  * @private
  */
 Connection.prototype.answerHandshake = function (lines) {
-	var path, headers, i, temp, key, sha1
+	var path, key, sha1
 
 	// First line
 	if (lines.length < 6) {
@@ -315,32 +323,22 @@ Connection.prototype.answerHandshake = function (lines) {
 	this.path = path[1]
 
 	// Extract all headers
-	headers = {}
-	for (i = 1; i < lines.length; i++) {
-		if (!lines[i].trim()) {
-			continue
-		}
-		temp = lines[i].match(/^([a-z-]+): (.+)$/i)
-		if (!temp) {
-			return false
-		}
-		headers[temp[1].toLowerCase()] = temp[2]
-	}
+	this.readHeaders(lines)
 
 	// Validate necessary headers
-	if (!('host' in headers) || !('sec-websocket-key' in headers)) {
+	if (!('host' in this.headers) || !('sec-websocket-key' in this.headers)) {
 		return false
 	}
-	if (headers.upgrade.toLowerCase() !== 'websocket' ||
-		headers.connection.toLowerCase().split(', ').indexOf('upgrade') === -1) {
+	if (this.headers.upgrade.toLowerCase() !== 'websocket' ||
+		this.headers.connection.toLowerCase().split(', ').indexOf('upgrade') === -1) {
 		return false
 	}
-	if (headers['sec-websocket-version'] !== '13') {
+	if (this.headers['sec-websocket-version'] !== '13') {
 		return false
 	}
 
-	this.key = headers['sec-websocket-key']
-	this.headers = headers
+	this.key = this.headers['sec-websocket-key']
+
 	// Build and send the response
 	sha1 = crypto.createHash('sha1')
 	sha1.end(this.key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')

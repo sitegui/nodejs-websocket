@@ -104,6 +104,15 @@ describe('text frames', function () {
 		// The server do nothing in this case
 		getServer()
 	})
+
+	it('should expose the headers', function () {
+		var client = getClient()
+
+		// Send a string and wait
+		client.headers.should.have.property('upgrade', 'websocket')
+		client.headers.should.have.property('connection', 'Upgrade')
+		client.headers.should.have.property('sec-websocket-accept')
+	})
 })
 
 function getClient() {
