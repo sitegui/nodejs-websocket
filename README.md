@@ -132,6 +132,9 @@ Stores the OutStream object returned by connection.beginBinary(). null if there 
 ## connection.path
 For a connection accepted by a server, it is a string representing the path to which the connection was made (example: "/chat"). null otherwise
 
+## connection.headers
+Read only map of header names and values. Header names are lower-cased
+
 ## Event: 'close(code, reason)'
 Emitted when the connection is closed by any side
 
