@@ -1,4 +1,4 @@
-/*globals describe, before, it*/
+/*globals describe, before, it, after*/
 'use strict'
 
 require('should')
@@ -15,6 +15,11 @@ describe('text frames', function () {
 		}).listen(TEST_PORT, function () {
 			testClient = ws.connect('ws://localhost:' + TEST_PORT, done)
 		})
+	})
+
+	after(function (done) {
+		testClient.close()
+		testServer.socket.close(done)
 	})
 
 	it('should connect to a websocket server', function (done) {
@@ -112,6 +117,31 @@ describe('text frames', function () {
 		client.headers.should.have.property('upgrade', 'websocket')
 		client.headers.should.have.property('connection', 'Upgrade')
 		client.headers.should.have.property('sec-websocket-accept')
+	})
+})
+
+describe('handshake', function () {
+	before(function (done) {
+		testServer = ws.createServer(function (conn) {
+			testConn = conn
+			// Send frame right after handshake answer
+			conn.sendText('hello')
+		}).listen(TEST_PORT, done)
+	})
+
+	after(function (done) {
+		testServer.socket.close(done)
+	})
+
+	it('should work when the handshake response is followed by a WS frame', function (done) {
+		// Server ready, make the first connection
+		ws.connect('ws://127.0.0.1:' + TEST_PORT, function () {
+			this.on('text', function (str) {
+				str.should.be.equal('hello')
+				this.close()
+				done()
+			})
+		})
 	})
 })
 
