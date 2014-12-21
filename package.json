@@ -1,6 +1,6 @@
 {
 	"name": "nodejs-websocket",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"author": "Sitegui <sitegui@sitegui.com.br>",
 	"description": "Basic server&client approach to websocket (text and binary frames)",
 	"main": "./index.js",
@@ -21,7 +21,7 @@
 		"test": "mocha -R spec -b"
 	},
 	"devDependencies": {
-		"mocha": "~1.18.2",
-		"should": "~3.3.1"
+		"mocha": "~2.0.1",
+		"should": "~4.4.1"
 	}
 }
