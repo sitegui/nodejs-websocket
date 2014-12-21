@@ -41,7 +41,7 @@ function Connection(socket, parentOrUrl, callback) {
 
 	this.socket = socket
 	this.readyState = this.CONNECTING
-	this.buffer = '' // string before handshake, Buffer after that
+	this.buffer = new Buffer(0)
 	this.frameBuffer = null // string for text frames and InStream for binary frames
 	this.outStream = null // current allocated OutStream object for sending binary frames
 	this.key = null // the Sec-WebSocket-Key header
@@ -192,28 +192,18 @@ Connection.prototype.doRead = function () {
 		return
 	}
 
+	// Save to the internal buffer
+	this.buffer = Buffer.concat([this.buffer, buffer], this.buffer.length + buffer.length)
+
 	if (this.readyState === this.CONNECTING) {
-		// Do the handshake and try to connect
-		this.buffer += buffer.toString()
-		if (this.buffer.length > Connection.maxBufferLength) {
-			// Too big for a handshake
-			return this.socket.end(this.server ? 'HTTP/1.1 400 Bad Request\r\n\r\n' : undefined)
-		}
-		if (this.buffer.substr(-4) !== '\r\n\r\n') {
-			// Wait for more data
+		if (!this.readHandshake()) {
+			// May have failed or we're waiting for more data
 			return
 		}
-		temp = this.buffer.split('\r\n')
-		if (this.server ? this.answerHandshake(temp) : this.checkHandshake(temp)) {
-			this.buffer = new Buffer(0)
-			this.readyState = this.OPEN
-			this.emit('connect')
-		} else {
-			this.socket.end(this.server ? 'HTTP/1.1 400 Bad Request\r\n\r\n' : undefined)
-		}
-	} else if (this.readyState !== this.CLOSED) {
-		// Save to the internal buffer and try to read as many frames as possible
-		this.buffer = Buffer.concat([this.buffer, buffer], this.buffer.length + buffer.length)
+	}
+
+	if (this.readyState !== this.CLOSED) {
+		// Try to read as many frames as possible
 		while ((temp = this.extractFrame()) === true) {}
 		if (temp === false) {
 			// Protocol error
@@ -246,9 +236,51 @@ Connection.prototype.startHandshake = function () {
 }
 
 /**
+ * Try to read the handshake from the internal buffer
+ * If it succeeds, the handshake data is consumed from the internal buffer
+ * @returns {boolean} - whether the handshake was done
+ * @private
+ */
+Connection.prototype.readHandshake = function () {
+	var found = false,
+		i, data
+
+	// Do the handshake and try to connect
+	if (this.buffer.length > Connection.maxBufferLength) {
+		// Too big for a handshake
+		this.socket.end(this.server ? 'HTTP/1.1 400 Bad Request\r\n\r\n' : undefined)
+		return false
+	}
+
+	// Search for '\r\n\r\n'
+	for (i = 0; i < this.buffer.length - 3; i++) {
+		if (this.buffer[i] === 13 && this.buffer[i + 2] === 13 &&
+			this.buffer[i + 1] === 10 && this.buffer[i + 3] === 10) {
+			found = true
+			break
+		}
+	}
+	if (!found) {
+		// Wait for more data
+		return false
+	}
+	data = this.buffer.slice(0, i + 4).toString().split('\r\n')
+	if (this.server ? this.answerHandshake(data) : this.checkHandshake(data)) {
+		this.buffer = this.buffer.slice(i + 4)
+		this.readyState = this.OPEN
+		this.emit('connect')
+		return true
+	} else {
+		this.socket.end(this.server ? 'HTTP/1.1 400 Bad Request\r\n\r\n' : undefined)
+		return false
+	}
+}
+
+/**
  * Read headers from HTTP protocol
  * Update the Connection#headers property
  * @param {string[]} lines one for each '\r\n'-separated HTTP request line
+ * @private
  */
 Connection.prototype.readHeaders = function (lines) {
 	var i, match
