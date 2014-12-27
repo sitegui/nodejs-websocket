@@ -1,27 +1,27 @@
 {
-	"name": "nodejs-websocket",
-	"version": "1.1.1",
-	"author": "Sitegui <sitegui@sitegui.com.br>",
-	"description": "Basic server&client approach to websocket (text and binary frames)",
-	"main": "./index.js",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/sitegui/nodejs-websocket"
-	},
-	"keywords": [
-		"websocket",
-		"websocket-server",
-		"websocket-client"
-	],
-	"license": "MIT",
-	"engines": {
-		"node": ">=0.10"
-	},
-	"scripts": {
-		"test": "mocha -R spec -b"
-	},
-	"devDependencies": {
-		"mocha": "^2.1.0",
-		"should": "^4.4.1"
-	}
+  "name": "nodejs-websocket",
+  "version": "1.2.0",
+  "author": "Sitegui <sitegui@sitegui.com.br>",
+  "description": "Basic server&client approach to websocket (text and binary frames)",
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sitegui/nodejs-websocket"
+  },
+  "keywords": [
+    "websocket",
+    "websocket-server",
+    "websocket-client"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.10"
+  },
+  "scripts": {
+    "test": "mocha -R spec -b"
+  },
+  "devDependencies": {
+    "mocha": "^2.1.0",
+    "should": "^4.4.1"
+  }
 }
