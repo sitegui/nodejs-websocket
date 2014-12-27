@@ -32,7 +32,7 @@ If it has a property called "secure" with value `true`, tls.createServer() will 
 
 The `callback` is a function which is automatically added to the `"connection"` event.
 
-## ws.connect(URL, [options], callback)
+## ws.connect(URL, [options], [callback])
 Returns a new `Connection` object, representing a websocket client connection
 
 `URL` is a string with the format "ws://localhost:8000/chat" (the port can be omitted)

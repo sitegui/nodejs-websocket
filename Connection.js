@@ -15,7 +15,7 @@ var util = require('util'),
  * @class
  * @param {(net.Socket|tls.CleartextStream)} socket a net or tls socket
  * @param {(Server|{path:string,host:string})} parentOrUrl parent in case of server-side connection, url object in case of client-side
- * @param {Function} callback will be added as a listener to 'connect'
+ * @param {Function} [callback] will be added as a listener to 'connect'
  * @inherits EventEmitter
  * @event close the numeric code and string reason will be passed
  * @event error an error object is passed
@@ -83,7 +83,9 @@ function Connection(socket, parentOrUrl, callback) {
 
 	// super constructor
 	events.EventEmitter.call(this)
-	this.on('connect', callback)
+	if (callback) {
+		this.once('connect', callback)
+	}
 }
 
 util.inherits(Connection, events.EventEmitter)
