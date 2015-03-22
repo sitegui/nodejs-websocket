@@ -363,7 +363,8 @@ Connection.prototype.answerHandshake = function (lines) {
 	if (!('host' in this.headers) || !('sec-websocket-key' in this.headers)) {
 		return false
 	}
-	if (this.headers.upgrade.toLowerCase() !== 'websocket' ||
+	if (!this.headers.upgrade 
+		this.headers.upgrade.toLowerCase() !== 'websocket' ||
 		this.headers.connection.toLowerCase().split(', ').indexOf('upgrade') === -1) {
 		return false
 	}
