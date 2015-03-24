@@ -360,11 +360,13 @@ Connection.prototype.answerHandshake = function (lines) {
 	this.readHeaders(lines)
 
 	// Validate necessary headers
-	if (!('host' in this.headers) || !('sec-websocket-key' in this.headers)) {
+	if (!('host' in this.headers) ||
+		!('sec-websocket-key' in this.headers) ||
+		!('upgrade' in this.headers) ||
+		!('connection' in this.headers)) {
 		return false
 	}
-	if (!this.headers.upgrade 
-		this.headers.upgrade.toLowerCase() !== 'websocket' ||
+	if (this.headers.upgrade.toLowerCase() !== 'websocket' ||
 		this.headers.connection.toLowerCase().split(', ').indexOf('upgrade') === -1) {
 		return false
 	}

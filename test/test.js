@@ -3,6 +3,7 @@
 
 require('should')
 var ws = require('../index')
+var net = require('net')
 
 var TEST_PORT = 8017
 var testServer, testClient, testConn
@@ -147,6 +148,19 @@ describe('handshake', function () {
 				this.close()
 				done()
 			})
+		})
+	})
+
+	it('should work when there is some missing headers', function (done) {
+		var conn = net.connect(TEST_PORT)
+		conn.write('GET / HTTP/1.1\r\n' +
+			'Host: localhost\r\n' +
+			'Sec-websocket-key: key\r\n' +
+			'C: 3\r\n' +
+			'D: 4\r\n' +
+			'E: 5\r\n\r\n')
+		conn.once('close', function () {
+			done()
 		})
 	})
 })
