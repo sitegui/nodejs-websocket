@@ -86,7 +86,12 @@ describe('text frames', function () {
 		// If it arrives, send another, wait again and done
 		getServer(null, function (inStream) {
 			inStream.on('readable', function () {
-				compareBuffers(inStream.read(), buffer)
+				var read = inStream.read()
+				if (!read) {
+					// Ignore when read() returns null
+					return
+				}
+				compareBuffers(read, buffer)
 				if (again) {
 					stream.end(buffer)
 					again = false
@@ -124,6 +129,7 @@ describe('handshake', function () {
 	before(function (done) {
 		testServer = ws.createServer(function (conn) {
 			testConn = conn
+
 			// Send frame right after handshake answer
 			conn.sendText('hello')
 		}).listen(TEST_PORT, done)
