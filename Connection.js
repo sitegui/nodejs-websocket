@@ -180,6 +180,16 @@ Connection.prototype.close = function (code, reason) {
 }
 
 /**
+ * Sends a ping request to the client
+ * @fires pong when pong reply is received
+ */
+Connection.prototype.ping = function() {
+	if (this.readyState === this.OPEN) {
+		this.socket.write(frame.createPingFrame())
+	};
+}
+
+/**
  * Reads contents from the socket and process it
  * @fires connect
  * @private
@@ -488,6 +498,7 @@ Connection.prototype.processFrame = function (fin, opcode, payload) {
 		return true
 	} else if (opcode === 10) {
 		// Pong frame
+		this.emit('pong');
 		return true
 	}
 

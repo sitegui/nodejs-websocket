@@ -50,6 +50,9 @@ Set the maximum size the internal Buffer can grow (default: 2MiB)
 If at any time it stays bigger than this, the connection will be closed with code 1009
 This is a security measure, to avoid memory attacks
 
+## ws.ping()
+Sends a [pong request](http://tools.ietf.org/html/rfc6455#section-5.5.2)
+
 # Server
 The class that represents a websocket server, much like a HTTP server
 
@@ -150,3 +153,5 @@ Emitted when the beginning of binary data is received. `inStream` is a ReadableS
 ## Event: 'connect()'
 Emitted when the connection is fully established (after the handshake)
 
+## Event: 'pong()'
+Emitted when the client sents a [pong request](http://tools.ietf.org/html/rfc6455#section-5.5.3), usually after a ping() request.

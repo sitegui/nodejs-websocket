@@ -124,6 +124,13 @@ describe('text frames', function () {
 		client.headers.should.have.property('connection', 'Upgrade')
 		client.headers.should.have.property('sec-websocket-accept')
 	})
+
+	it('should emit pong event on ping', function(done) {
+		getServer(function (str) {
+			this.ping();
+			str.on('pong', done)
+		});
+	})
 })
 
 describe('handshake', function () {
