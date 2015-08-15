@@ -68,12 +68,18 @@ exports.createCloseFrame = function (code, reason, masked) {
 
 /**
  * Create a ping frame
+ * @param {string} data
  * @param {boolean} [masked=false] if the frame should be masked
  * @returns {Buffer}
  * @private
  */
-exports.createPingFrame = function (masked) {
-	return generateMetaData(true, 9, masked === undefined ? false : masked, new Buffer(0))
+exports.createPingFrame = function (data, masked) {
+	var payload, meta
+
+	payload = new Buffer(data)
+	meta = generateMetaData(true, 9, masked === undefined ? false : masked, payload)
+
+	return Buffer.concat([meta, payload], meta.length + payload.length)
 }
 
 /**
