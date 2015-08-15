@@ -119,10 +119,20 @@ describe('text frames', function () {
 	it('should expose the headers', function () {
 		var client = getClient()
 
-		// Send a string and wait
 		client.headers.should.have.property('upgrade', 'websocket')
 		client.headers.should.have.property('connection', 'Upgrade')
 		client.headers.should.have.property('sec-websocket-accept')
+	})
+
+	it('should emit pong event on ping', function (done) {
+		var client = getClient()
+
+		// Send a ping and wait for the pong
+		client.sendPing('Knock knock')
+		client.once('pong', function (data) {
+			data.should.be.equal('Knock knock')
+			done()
+		})
 	})
 })
 

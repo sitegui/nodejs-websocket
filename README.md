@@ -110,6 +110,9 @@ Sends a single chunk of binary data (like calling connection.beginBinary().end(d
 
 `callback` will be added as a listener to write operation over the socket
 
+## connection.sendPing([data=''])
+Sends a [ping](http://tools.ietf.org/html/rfc6455#section-5.5.2) with optional payload
+
 ## connection.close([code, [reason]])
 Starts the closing handshake (sends a close frame)
 
@@ -150,3 +153,5 @@ Emitted when the beginning of binary data is received. `inStream` is a ReadableS
 ## Event: 'connect()'
 Emitted when the connection is fully established (after the handshake)
 
+## Event: 'pong(data)'
+Emitted when a [pong](http://tools.ietf.org/html/rfc6455#section-5.5.3) is received, usually after a ping was sent. `data` is the pong payload, as a string

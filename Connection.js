@@ -21,6 +21,7 @@ var util = require('util'),
  * @event error an error object is passed
  * @event text a string is passed
  * @event binary a inStream object is passed
+ * @event pong a string is passed
  * @event connect
  */
 function Connection(socket, parentOrUrl, callback) {
@@ -157,6 +158,18 @@ Connection.prototype.sendBinary = function (data, callback) {
 			return this.socket.write(frame.createBinaryFrame(data, !this.server, true, true), callback)
 		}
 		this.emit('error', new Error('You can\'t send more binary frames until you finish sending the previous binary frames'))
+	}
+	this.emit('error', new Error('You can\'t write to a non-open connection'))
+}
+
+/**
+ * Sends a ping to the remote
+ * @param {string} [data=''] - optional ping data
+ * @fires pong when pong reply is received
+ */
+Connection.prototype.sendPing = function (data) {
+	if (this.readyState === this.OPEN) {
+		return this.socket.write(frame.createPingFrame(data || '', !this.server))
 	}
 	this.emit('error', new Error('You can\'t write to a non-open connection'))
 }
@@ -488,6 +501,7 @@ Connection.prototype.processFrame = function (fin, opcode, payload) {
 		return true
 	} else if (opcode === 10) {
 		// Pong frame
+		this.emit('pong', payload.toString())
 		return true
 	}
 
