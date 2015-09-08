@@ -38,6 +38,11 @@ exports.connect = function (URL, options, callback) {
 	URL = parseWSURL(URL)
 	options.port = URL.port
 	options.host = URL.host
+
+	if (options.hasOwnProperty('extraHeaders')) {
+		URL.extraHeaders = options.extraHeaders
+	}
+
 	if (URL.secure) {
 		socket = tls.connect(options)
 	} else {
@@ -76,7 +81,7 @@ function parseWSURL(URL) {
 
 	parts.protocol = parts.protocol || 'ws:'
 	if (parts.protocol === 'ws:') {
-		secure = false
+		secure = false 
 	} else if (parts.protocol === 'wss:') {
 		secure = true
 	} else {
