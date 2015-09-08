@@ -81,7 +81,7 @@ function parseWSURL(URL) {
 
 	parts.protocol = parts.protocol || 'ws:'
 	if (parts.protocol === 'ws:') {
-		secure = false 
+		secure = false
 	} else if (parts.protocol === 'wss:') {
 		secure = true
 	} else {

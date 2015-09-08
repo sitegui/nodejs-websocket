@@ -244,15 +244,15 @@ Connection.prototype.startHandshake = function () {
 	}
 	this.key = key.toString('base64')
 	headers = {
-		'' : 'GET ' + this.path + ' HTTP/1.1',
+		'': 'GET ' + this.path + ' HTTP/1.1',
 		'Host': this.host,
-		'Upgrade' : 'websocket',
+		'Upgrade': 'websocket',
 		'Connection': 'Upgrade',
-		'Sec-WebSocket-Key' : this.key,
-		'Sec-WebSocket-Version' : '13'
+		'Sec-WebSocket-Key': this.key,
+		'Sec-WebSocket-Version': '13'
 	}
 
-	for (var attrname in this.extraHeaders) { 
+	for (var attrname in this.extraHeaders) {
 		headers[attrname] = this.extraHeaders[attrname]
 	}
 
@@ -596,7 +596,7 @@ Connection.prototype.buildHeaders = function (headers) {
 	var headerString = ''
 
 	for (var prop in headers) {
-		var separator = (prop === '')? '':': '
+		var separator = (prop === '') ? '' : ': '
 		var str = prop + separator + headers[prop] + '\r\n'
 		headerString = headerString + str
 	}

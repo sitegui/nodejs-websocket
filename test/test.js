@@ -11,7 +11,7 @@ var name = 'test'
 var password = 'test123'
 var options = {
 	extraHeaders: {
-		Authorization: 'Basic ' + new Buffer(name+ ':' + password).toString('base64')
+		Authorization: 'Basic ' + new Buffer(name + ':' + password).toString('base64')
 	}
 }
 
@@ -21,7 +21,7 @@ describe('extraHeaders', function () {
 		testServer = ws.createServer(function (conn) {
 			testConn = conn
 		}).listen(TEST_PORT, function () {
-			testClient = ws.connect('ws://localhost:' + TEST_PORT,options, done)
+			testClient = ws.connect('ws://localhost:' + TEST_PORT, options, done)
 		})
 	})
 
@@ -32,26 +32,26 @@ describe('extraHeaders', function () {
 
 	it('should create a headerString with extra header options', function (done) {
 		var client = getClient(),
-			string = 'GET '+ client.path +' HTTP/1.1\r\nHost: '+client.host+'\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: '+client.key+'\r\nSec-WebSocket-Version: 13\r\nAuthorization: Basic ' + new Buffer(name+ ':' + password).toString('base64') +'\r\n\r\n'
+			string = 'GET ' + client.path + ' HTTP/1.1\r\nHost: ' + client.host + '\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ' + client.key + '\r\nSec-WebSocket-Version: 13\r\nAuthorization: Basic ' + new Buffer(name + ':' + password).toString('base64') + '\r\n\r\n'
 
 		var headers = {
-			'' : 'GET ' + client.path + ' HTTP/1.1',
+			'': 'GET ' + client.path + ' HTTP/1.1',
 			'Host': client.host,
-			'Upgrade' : 'websocket',
+			'Upgrade': 'websocket',
 			'Connection': 'Upgrade',
-			'Sec-WebSocket-Key' : client.key,
-			'Sec-WebSocket-Version' : '13'
+			'Sec-WebSocket-Key': client.key,
+			'Sec-WebSocket-Version': '13'
 		}
 
-		headers.Authorization = 'Basic ' + new Buffer(name+ ':' + password).toString('base64')
+		headers.Authorization = 'Basic ' + new Buffer(name + ':' + password).toString('base64')
 
 		var buildstring = client.buildHeaders(headers)
 
 		if (string === buildstring) {
 			done()
 		}
-		
-	}) 
+
+	})
 })
 
 describe('text frames', function () {
