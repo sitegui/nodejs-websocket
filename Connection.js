@@ -33,11 +33,13 @@ function Connection(socket, parentOrUrl, callback) {
 		this.server = parentOrUrl
 		this.path = null
 		this.host = null
+		this.extraHeaders = null
 	} else {
 		// Client-side
 		this.server = null
 		this.path = parentOrUrl.path
 		this.host = parentOrUrl.host
+		this.extraHeaders = parentOrUrl.extraHeaders
 	}
 
 	this.socket = socket
@@ -235,18 +237,26 @@ Connection.prototype.doRead = function () {
  * @private
  */
 Connection.prototype.startHandshake = function () {
-	var str, i, key
+	var str, i, key, headers
 	key = new Buffer(16)
 	for (i = 0; i < 16; i++) {
 		key[i] = Math.floor(Math.random() * 256)
 	}
 	this.key = key.toString('base64')
-	str = 'GET ' + this.path + ' HTTP/1.1\r\n' +
-		'Host: ' + this.host + '\r\n' +
-		'Upgrade: websocket\r\n' +
-		'Connection: Upgrade\r\n' +
-		'Sec-WebSocket-Key: ' + this.key + '\r\n' +
-		'Sec-WebSocket-Version: 13\r\n\r\n'
+	headers = {
+		'' : 'GET ' + this.path + ' HTTP/1.1',
+		'Host': this.host,
+		'Upgrade' : 'websocket',
+		'Connection': 'Upgrade',
+		'Sec-WebSocket-Key' : this.key,
+		'Sec-WebSocket-Version' : '13'
+	}
+
+	for (var attrname in this.extraHeaders) { 
+		headers[attrname] = this.extraHeaders[attrname]
+	}
+
+	str = this.buildHeaders(headers)
 	this.socket.write(str)
 }
 
@@ -357,7 +367,7 @@ Connection.prototype.checkHandshake = function (lines) {
  * @private
  */
 Connection.prototype.answerHandshake = function (lines) {
-	var path, key, sha1
+	var path, key, sha1, str, headers
 
 	// First line
 	if (lines.length < 6) {
@@ -393,10 +403,14 @@ Connection.prototype.answerHandshake = function (lines) {
 	sha1 = crypto.createHash('sha1')
 	sha1.end(this.key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
 	key = sha1.read().toString('base64')
-	this.socket.write('HTTP/1.1 101 Switching Protocols\r\n' +
-		'Upgrade: websocket\r\n' +
-		'Connection: Upgrade\r\n' +
-		'Sec-WebSocket-Accept: ' + key + '\r\n\r\n')
+	headers = {
+		'': 'HTTP/1.1 101 Switching Protocols',
+		Upgrade: 'websocket',
+		Connection: 'Upgrade',
+		'Sec-WebSocket-Accept': key
+	}
+	str = this.buildHeaders(headers)
+	this.socket.write(str)
 	return true
 }
 
@@ -570,4 +584,24 @@ Connection.prototype.processCloseFrame = function (payload) {
 	this.socket.write(frame.createCloseFrame(code, reason, !this.server))
 	this.readyState = this.CLOSED
 	this.emit('close', code, reason)
+}
+
+/**
+ * Build the header String
+ * @param {object} headers
+ * @fires header string
+ * @private
+ */
+Connection.prototype.buildHeaders = function (headers) {
+	var headerString = ''
+
+	for (var prop in headers) {
+		var separator = (prop === '')? '':': '
+		var str = prop + separator + headers[prop] + '\r\n'
+		headerString = headerString + str
+	}
+
+	headerString = headerString + '\r\n'
+
+	return headerString
 }
