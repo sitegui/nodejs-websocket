@@ -35,7 +35,6 @@ describe('extraHeaders', function () {
 			string = 'GET ' + client.path + ' HTTP/1.1\r\nHost: ' + client.host + '\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ' + client.key + '\r\nSec-WebSocket-Version: 13\r\nAuthorization: Basic ' + new Buffer(name + ':' + password).toString('base64') + '\r\n\r\n'
 
 		var headers = {
-			'': 'GET ' + client.path + ' HTTP/1.1',
 			'Host': client.host,
 			'Upgrade': 'websocket',
 			'Connection': 'Upgrade',
@@ -45,7 +44,7 @@ describe('extraHeaders', function () {
 
 		headers.Authorization = 'Basic ' + new Buffer(name + ':' + password).toString('base64')
 
-		var buildstring = client.buildHeaders(headers)
+		var buildstring = client.buildRequest('GET ' + client.path + ' HTTP/1.1', headers)
 
 		if (string === buildstring) {
 			done()

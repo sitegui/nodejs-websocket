@@ -237,26 +237,25 @@ Connection.prototype.doRead = function () {
  * @private
  */
 Connection.prototype.startHandshake = function () {
-	var str, i, key, headers
+	var str, i, key, headers, header
 	key = new Buffer(16)
 	for (i = 0; i < 16; i++) {
 		key[i] = Math.floor(Math.random() * 256)
 	}
 	this.key = key.toString('base64')
 	headers = {
-		'': 'GET ' + this.path + ' HTTP/1.1',
-		'Host': this.host,
-		'Upgrade': 'websocket',
-		'Connection': 'Upgrade',
+		Host: this.host,
+		Upgrade: 'websocket',
+		Connection: 'Upgrade',
 		'Sec-WebSocket-Key': this.key,
 		'Sec-WebSocket-Version': '13'
 	}
 
-	for (var attrname in this.extraHeaders) {
-		headers[attrname] = this.extraHeaders[attrname]
+	for (header in this.extraHeaders) {
+		headers[header] = this.extraHeaders[header]
 	}
 
-	str = this.buildHeaders(headers)
+	str = this.buildRequest('GET ' + this.path + ' HTTP/1.1', headers)
 	this.socket.write(str)
 }
 
@@ -367,7 +366,7 @@ Connection.prototype.checkHandshake = function (lines) {
  * @private
  */
 Connection.prototype.answerHandshake = function (lines) {
-	var path, key, sha1, str, headers
+	var path, key, sha1
 
 	// First line
 	if (lines.length < 6) {
@@ -403,14 +402,11 @@ Connection.prototype.answerHandshake = function (lines) {
 	sha1 = crypto.createHash('sha1')
 	sha1.end(this.key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
 	key = sha1.read().toString('base64')
-	headers = {
-		'': 'HTTP/1.1 101 Switching Protocols',
+	this.socket.write(this.buildRequest('HTTP/1.1 101 Switching Protocols', {
 		Upgrade: 'websocket',
 		Connection: 'Upgrade',
 		'Sec-WebSocket-Accept': key
-	}
-	str = this.buildHeaders(headers)
-	this.socket.write(str)
+	}))
 	return true
 }
 
@@ -587,21 +583,19 @@ Connection.prototype.processCloseFrame = function (payload) {
 }
 
 /**
- * Build the header String
- * @param {object} headers
- * @fires header string
+ * Build the header string
+ * @param {string} requestLine
+ * @param {Object<string>} headers
+ * @returns {string}
  * @private
  */
-Connection.prototype.buildHeaders = function (headers) {
-	var headerString = ''
+Connection.prototype.buildRequest = function (requestLine, headers) {
+	var headerString = requestLine + '\r\n',
+		headerName
 
-	for (var prop in headers) {
-		var separator = (prop === '') ? '' : ': '
-		var str = prop + separator + headers[prop] + '\r\n'
-		headerString = headerString + str
+	for (headerName in headers) {
+		headerString += headerName + ': ' + headers[headerName] + '\r\n'
 	}
 
-	headerString = headerString + '\r\n'
-
-	return headerString
+	return headerString + '\r\n'
 }
