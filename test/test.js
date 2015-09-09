@@ -7,49 +7,31 @@ var net = require('net')
 
 var TEST_PORT = 8017
 var testServer, testClient, testConn
-var name = 'test'
-var password = 'test123'
-var options = {
-	extraHeaders: {
-		Authorization: 'Basic ' + new Buffer(name + ':' + password).toString('base64')
-	}
-}
 
 describe('extraHeaders', function () {
 	before(function (done) {
 		// Create a test server and one client
 		testServer = ws.createServer(function (conn) {
 			testConn = conn
-		}).listen(TEST_PORT, function () {
-			testClient = ws.connect('ws://localhost:' + TEST_PORT, options, done)
-		})
+		}).listen(TEST_PORT, done)
 	})
 
 	after(function (done) {
-		testClient.close()
+		testConn.close()
 		testServer.socket.close(done)
 	})
 
 	it('should create a headerString with extra header options', function (done) {
-		var client = getClient(),
-			string = 'GET ' + client.path + ' HTTP/1.1\r\nHost: ' + client.host + '\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ' + client.key + '\r\nSec-WebSocket-Version: 13\r\nAuthorization: Basic ' + new Buffer(name + ':' + password).toString('base64') + '\r\n\r\n'
-
-		var headers = {
-			'Host': client.host,
-			'Upgrade': 'websocket',
-			'Connection': 'Upgrade',
-			'Sec-WebSocket-Key': client.key,
-			'Sec-WebSocket-Version': '13'
-		}
-
-		headers.Authorization = 'Basic ' + new Buffer(name + ':' + password).toString('base64')
-
-		var buildstring = client.buildRequest('GET ' + client.path + ' HTTP/1.1', headers)
-
-		if (string === buildstring) {
+		testServer.once('connection', function (client) {
+			client.headers['x-headername'].should.be.equal('header value')
 			done()
-		}
+		})
 
+		ws.connect('ws://localhost:' + TEST_PORT, {
+			extraHeaders: {
+				'X-HeaderName': 'header value'
+			}
+		})
 	})
 })
 
