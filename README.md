@@ -38,7 +38,8 @@ Returns a new `Connection` object, representing a websocket client connection
 `URL` is a string with the format "ws://localhost:8000/chat" (the port can be omitted)
 
 `options` is an object that will be passed to net.connect() (or tls.connect() if the protocol is "wss:").
-The properties "host" and "port" will be read from the `URL`
+The properties "host" and "port" will be read from the `URL`.
+The property `extraHeaders` will be used to add more headers to the HTTP handshake request.
 
 `callback` will be added as "connect" listener
 
