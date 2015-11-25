@@ -1,3 +1,6 @@
+# 1.4.1
+* Added: example to README
+
 # 1.4.0
 * Added: `extraHeaders` option in `ws.connect(URL, [options], [callback])` to let one add custom headers to the HTTP handshake request
 
