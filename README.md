@@ -1,4 +1,8 @@
 # Nodejs Websocket
+[![Build Status](https://travis-ci.org/sitegui/nodejs-websocket.svg?branch=master)](https://travis-ci.org/sitegui/nodejs-websocket)
+[![Inline docs](https://inch-ci.org/github/sitegui/nodejs-websocket.svg?branch=master)](https://inch-ci.org/github/sitegui/nodejs-websocket)
+[![Dependency Status](https://david-dm.org/sitegui/nodejs-websocket.svg)](https://david-dm.org/sitegui/nodejs-websocket)
+
 A nodejs module for websocket server and client
 
 # How to use it
