@@ -149,7 +149,29 @@ Emitted in case of error (like trying to send text data while still sending bina
 Emitted when a text is received. `str` is a string
 
 ## Event: 'binary(inStream)'
-Emitted when the beginning of binary data is received. `inStream` is a ReadableStream
+Emitted when the beginning of binary data is received. `inStream` is a [ReadableStream](https://nodejs.org/api/stream.html#stream_class_stream_readable):
+```javascript
+var server = ws.createServer(function (conn) {
+	console.log("New connection")
+	conn.on("binary", function (inStream) {
+		// Empty buffer for collecting binary data
+		var data = new Buffer(0)
+		// Read chunks of binary data and add to the buffer
+		inStream.on("readable", function () {
+		    var newData = inStream.read()
+		    if (newData)
+		        data = Buffer.concat([data, newData], data.length+newData.length)
+		})
+		inStream.on("end", function () {
+			console.log("Received " + data.length + " bytes of binary data")
+		    process_my_data(data)
+		})
+	})
+	conn.on("close", function (code, reason) {
+		console.log("Connection closed")
+	})
+}).listen(8001)
+```
 
 ## Event: 'connect()'
 Emitted when the connection is fully established (after the handshake)
