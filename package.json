@@ -21,7 +21,7 @@
 		"test": "mocha -R spec -b"
 	},
 	"devDependencies": {
-		"mocha": "^2.2.1",
-		"should": "^7.0.4"
+		"mocha": "^2.3.4",
+		"should": "^7.1.1"
 	}
 }
