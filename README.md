@@ -115,6 +115,11 @@ Sends a single chunk of binary data (like calling connection.beginBinary().end(d
 
 `callback` will be added as a listener to write operation over the socket
 
+## connection.send(data, [callback])
+Sends a given string or Buffer to the other side. This is simply an alias for `sendText()` if data is a string or `sendBinary()` if the data is a Buffer.
+
+`callback` will be added as a listener to write operation over the socket
+
 ## connection.sendPing([data=''])
 Sends a [ping](http://tools.ietf.org/html/rfc6455#section-5.5.2) with optional payload
 

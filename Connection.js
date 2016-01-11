@@ -165,6 +165,21 @@ Connection.prototype.sendBinary = function (data, callback) {
 }
 
 /**
+ * Sends a text or binary frame
+ * @param {string|Buffer} data
+ * @param {Function} [callback] will be executed when the data is finally written out
+ */
+Connection.prototype.send = function (data, callback) {
+	if (typeof data === 'string') {
+		this.sendText(data, callback)
+	} else if (Buffer.isBuffer(data)) {
+		this.sendBinary(data, callback)
+	} else {
+		throw new TypeError('data should be either a string or a Buffer instance')
+	}
+}
+
+/**
  * Sends a ping to the remote
  * @param {string} [data=''] - optional ping data
  * @fires pong when pong reply is received

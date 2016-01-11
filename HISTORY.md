@@ -1,3 +1,6 @@
+# 1.5.0
+* Added: `Connection#send` as a short hand for `Connection#sendText` or `Connection#sendBinary`, depending on the data type (string or Buffer)
+
 # 1.4.1
 * Added: example to README
 

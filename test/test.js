@@ -35,7 +35,7 @@ describe('extraHeaders', function () {
 	})
 })
 
-describe('text frames', function () {
+describe('frames', function () {
 	before(function (done) {
 		// Create a test server and one client
 		testServer = ws.createServer(function (conn) {
@@ -158,6 +158,31 @@ describe('text frames', function () {
 		client.once('pong', function (data) {
 			data.should.be.equal('Knock knock')
 			done()
+		})
+	})
+
+	it('should send text and binary data', function (done) {
+		var client = getClient(),
+			expected = 'text frame',
+			textData = 'text data',
+			binaryData = new Buffer('binary data')
+
+		// Use send() for text and binary
+		client.send(textData)
+		client.send(binaryData)
+
+		// Test whether both were received
+		getServer(function (str) {
+			expected.should.be.equal('text frame')
+			expected = 'binary frame'
+			str.should.be.equal(textData)
+		}, function (inStream) {
+			expected.should.be.equal('binary frame')
+			expected = ''
+			inStream.once('readable', function () {
+				compareBuffers(inStream.read(), binaryData)
+			})
+			inStream.on('end', done)
 		})
 	})
 })
