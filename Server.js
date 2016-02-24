@@ -98,3 +98,15 @@ Server.prototype.listen = function (port, host, callback) {
 
 	return this
 }
+
+/**
+ * Sets the list of supported subprotocols
+ * @param {array} [protocols]
+ */
+Server.prototype.acceptSubprotocols = function (protocols) {
+	var that = this
+
+	this.acceptedSubprotocols = protocols;
+
+	return this
+}
