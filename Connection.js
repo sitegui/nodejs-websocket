@@ -440,17 +440,17 @@ Connection.prototype.answerHandshake = function (lines) {
 		var acceptedProtocols = this.server.acceptedSubprotocols
 		var requestedProtocols = this.requestedProtocols
 
-		var firstProtocol = false
-		requestedProtocols.forEach(function (e) {
-			acceptedProtocols.forEach(function (a) {
-				if (a == e && firstProtocol === false) {
-					firstProtocol = e
-				}
-			})
+		// The earlier a protocol appears in our accepted list, the higher its priority
+		var firstProtocol = acceptedProtocols.length - 1
+		requestedProtocols.forEach(function (protocol) {
+			var positionInAcceptedList = acceptedProtocols.indexOf(protocol)
+
+			if (positionInAcceptedList < firstProtocol) {
+				firstProtocol = positionInAcceptedList
+			}
 		})
 
-		console.log(firstProtocol)
-		this.usedProtocol = firstProtocol
+		this.usedProtocol = acceptedProtocols[firstProtocol]
 		response['Sec-WebSocket-Protocol'] = this.usedProtocol
 	}
 
