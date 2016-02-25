@@ -416,7 +416,7 @@ Connection.prototype.answerHandshake = function (lines) {
 	// Read protocols
 	var protocols = this.headers['sec-websocket-protocol']
 
-	if (typeof protocols !== "undefined") {
+	if (typeof protocols !== 'undefined') {
 		this.requestedProtocols = protocols
 			.split(",")
 			.map(function(value) {
@@ -450,8 +450,11 @@ Connection.prototype.answerHandshake = function (lines) {
 			}
 		})
 
-		this.usedProtocol = acceptedProtocols[firstProtocol]
-		response['Sec-WebSocket-Protocol'] = this.usedProtocol
+		// Omit header in response if we don't support the protocol
+		if (firstProtocol >= 0) {
+			this.usedProtocol = acceptedProtocols[firstProtocol]
+			response['Sec-WebSocket-Protocol'] = this.usedProtocol
+		}
 	}
 
 	this.socket.write(this.buildRequest('HTTP/1.1 101 Switching Protocols', response))
