@@ -436,7 +436,7 @@ Connection.prototype.answerHandshake = function (lines) {
 	}
 
 	// Choose a protocol
-	if (this.server && this.server.acceptedSubprotocols) {
+	if (typeof this.requestedProtocols !== 'undefined' && this.server) {
 		var acceptedProtocols = this.server.acceptedSubprotocols
 		var requestedProtocols = this.requestedProtocols
 
