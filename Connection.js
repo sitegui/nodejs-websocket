@@ -381,7 +381,7 @@ Connection.prototype.checkHandshake = function (lines) {
  * @private
  */
 Connection.prototype.answerHandshake = function (lines) {
-	var path, key, sha1
+	var path, key, sha1, response
 
 	// First line
 	if (lines.length < 6) {
@@ -413,15 +413,51 @@ Connection.prototype.answerHandshake = function (lines) {
 
 	this.key = this.headers['sec-websocket-key']
 
+	// Read protocols
+	var protocols = this.headers['sec-websocket-protocol']
+
+	if (typeof protocols !== 'undefined') {
+		this.requestedProtocols = protocols
+			.split(",")
+			.map(function(value) {
+				return value.trim()
+			})
+	}
+
 	// Build and send the response
 	sha1 = crypto.createHash('sha1')
 	sha1.end(this.key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
 	key = sha1.read().toString('base64')
-	this.socket.write(this.buildRequest('HTTP/1.1 101 Switching Protocols', {
+
+	response = {
 		Upgrade: 'websocket',
 		Connection: 'Upgrade',
 		'Sec-WebSocket-Accept': key
-	}))
+	}
+
+	// Choose a protocol
+	if (typeof this.requestedProtocols !== 'undefined' && this.server) {
+		var acceptedProtocols = this.server.acceptedSubprotocols
+		var requestedProtocols = this.requestedProtocols
+
+		// The earlier a protocol appears in our accepted list, the higher its priority
+		var firstProtocol = acceptedProtocols.length - 1
+		requestedProtocols.forEach(function (protocol) {
+			var positionInAcceptedList = acceptedProtocols.indexOf(protocol)
+
+			if (positionInAcceptedList < firstProtocol) {
+				firstProtocol = positionInAcceptedList
+			}
+		})
+
+		// Omit header in response if we don't support the protocol
+		if (firstProtocol >= 0) {
+			this.usedProtocol = acceptedProtocols[firstProtocol]
+			response['Sec-WebSocket-Protocol'] = this.usedProtocol
+		}
+	}
+
+	this.socket.write(this.buildRequest('HTTP/1.1 101 Switching Protocols', response))
 	return true
 }
 

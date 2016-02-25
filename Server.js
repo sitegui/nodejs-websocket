@@ -61,6 +61,7 @@ function Server(secure, options, callback) {
 		that.emit('error', err)
 	})
 	this.connections = []
+	this.acceptedSubprotocols = []
 
 	// super constructor
 	events.EventEmitter.call(this)
@@ -95,6 +96,16 @@ Server.prototype.listen = function (port, host, callback) {
 	this.socket.listen(port, host, function () {
 		that.emit('listening')
 	})
+
+	return this
+}
+
+/**
+ * Sets the list of supported subprotocols
+ * @param {array} [protocols]
+ */
+Server.prototype.acceptSubprotocols = function (protocols) {
+	this.acceptedSubprotocols = protocols
 
 	return this
 }
