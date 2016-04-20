@@ -18,7 +18,7 @@ describe('extraHeaders', function () {
 
 	after(function (done) {
 		testConn.close()
-		testServer.socket.close(done)
+		testServer.close(done)
 	})
 
 	it('should create a headerString with extra header options', function (done) {
@@ -47,7 +47,7 @@ describe('frames', function () {
 
 	after(function (done) {
 		testClient.close()
-		testServer.socket.close(done)
+		testServer.close(done)
 	})
 
 	it('should connect to a websocket server', function (done) {
@@ -198,7 +198,7 @@ describe('handshake', function () {
 	})
 
 	after(function (done) {
-		testServer.socket.close(done)
+		testServer.close(done)
 	})
 
 	it('should work when the handshake response is followed by a WS frame', function (done) {
@@ -221,6 +221,40 @@ describe('handshake', function () {
 			'D: 4\r\n' +
 			'E: 5\r\n\r\n')
 		conn.once('close', function () {
+			done()
+		})
+	})
+})
+
+describe('close', function () {
+	before(function (done) {
+		// Create a test server and one client
+		testServer = ws.createServer(function (conn) {
+			testConn = conn
+		}).listen(TEST_PORT, function () {
+			testClient = ws.connect('ws://localhost:' + TEST_PORT, done)
+		})
+	})
+
+	var called = false
+
+	it('should stop the server from accepting new connections', function (done) {
+		testServer.close(function () {
+			called = true
+		})
+
+		var newTestClient = ws.connect('ws://localhost:' + TEST_PORT)
+		newTestClient.once('error', function (err) {
+			err.code.should.be.equal('ECONNREFUSED')
+			done()
+		})
+	})
+
+	it('should emit close after all client connections are closed', function (done) {
+		called.should.be.false()
+		testClient.close()
+		testServer.once('close', function () {
+			called.should.be.true()
 			done()
 		})
 	})
