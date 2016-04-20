@@ -98,3 +98,16 @@ Server.prototype.listen = function (port, host, callback) {
 
 	return this
 }
+
+/**
+ * Stops the server from accepting new connections and keeps existing connections.
+ * This function is asynchronous, the server is finally closed when all connections are ended and the server emits a 'close' event.
+ * The optional callback will be called once the 'close' event occurs.
+ * @param {function()} [callback]
+ */
+Server.prototype.close = function (callback) {
+	if (callback) {
+		this.once('close', callback)
+	}
+	this.socket.close()
+}

@@ -67,6 +67,9 @@ A `port` value of zero will assign a random port.
 
 `callback` will be added as an listener for the `'listening'` event.
 
+## server.close([callback])
+Stops the server from accepting new connections and keeps existing connections. This function is asynchronous, the server is finally closed when all connections are ended and the server emits a 'close' event. The optional callback will be called once the 'close' event occurs.
+
 ## server.socket
 The underlying socket, returned by net.createServer or tls.createServer
 
