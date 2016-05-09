@@ -1,3 +1,6 @@
+# 1.6.0
+* Added: `Server#close` as a short hand for `Server#socket.close`
+
 # 1.5.0
 * Added: `Connection#send` as a short hand for `Connection#sendText` or `Connection#sendBinary`, depending on the data type (string or Buffer)
 

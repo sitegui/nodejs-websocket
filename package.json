@@ -1,6 +1,6 @@
 {
 	"name": "nodejs-websocket",
-	"version": "1.5.0",
+	"version": "1.6.0",
 	"author": "Sitegui <sitegui@sitegui.com.br>",
 	"description": "Basic server&client approach to websocket (text and binary frames)",
 	"main": "./index.js",
