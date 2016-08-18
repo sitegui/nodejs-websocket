@@ -47,6 +47,8 @@ The property `extraHeaders` will be used to add more headers to the HTTP handsha
 
 `callback` will be added as "connect" listener
 
+`protocols` are array of subprotocols for requesting
+
 ## ws.setBinaryFragmentation(bytes)
 Sets the minimum size of a pack of binary data to send in a single frame (default: 512kiB)
 

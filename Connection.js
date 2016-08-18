@@ -428,7 +428,7 @@ Connection.prototype.answerHandshake = function (lines) {
 	// https://tools.ietf.org/html/rfc6455#page-7
 	if( 'sec-websocket-protocol' in this.headers ){
 		protocol = this.headers['sec-websocket-protocol'];
-		this.protocols = protocol.split(/,|;/);
+		this.protocols = protocol.split(',').map(function(v){return v.trim()});
 		headers2send['Sec-WebSocket-Protocol'] = protocol;
 	} else {
 		// No protocols - empty array
