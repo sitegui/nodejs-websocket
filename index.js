@@ -43,6 +43,11 @@ exports.connect = function (URL, options, callback) {
 		URL.extraHeaders = options.extraHeaders
 	}
 
+	if (options.hasOwnProperty('protocols')){
+		URL.extraHeaders = URL.extraHeaders || {}
+		URL.extraHeaders['Sec-WebSocket-Protocol'] = options.protocols.join(', ')
+	}
+
 	if (URL.secure) {
 		socket = tls.connect(options)
 	} else {

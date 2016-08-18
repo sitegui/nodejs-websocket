@@ -47,6 +47,8 @@ The property `extraHeaders` will be used to add more headers to the HTTP handsha
 
 `callback` will be added as "connect" listener
 
+`protocols` are array of subprotocols for requesting
+
 ## ws.setBinaryFragmentation(bytes)
 Sets the minimum size of a pack of binary data to send in a single frame (default: 512kiB)
 
@@ -150,6 +152,11 @@ For a connection accepted by a server, it is a string representing the path to w
 
 ## connection.headers
 Read only map of header names and values. Header names are lower-cased
+
+## connection.protocols
+Array of protocols requested by client. If no protocols are requested - array is empty. Additional resources:
+* [WebSocket Subprotocol Name Registry](http://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name)
+* [The WebSocket Protocol](https://tools.ietf.org/html/rfc6455#page-7)
 
 ## Event: 'close(code, reason)'
 Emitted when the connection is closed by any side

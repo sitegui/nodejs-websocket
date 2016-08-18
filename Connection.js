@@ -381,7 +381,7 @@ Connection.prototype.checkHandshake = function (lines) {
  * @private
  */
 Connection.prototype.answerHandshake = function (lines) {
-	var path, key, sha1
+	var path, key, sha1, headers2send, protocol;
 
 	// First line
 	if (lines.length < 6) {
@@ -417,11 +417,25 @@ Connection.prototype.answerHandshake = function (lines) {
 	sha1 = crypto.createHash('sha1')
 	sha1.end(this.key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
 	key = sha1.read().toString('base64')
-	this.socket.write(this.buildRequest('HTTP/1.1 101 Switching Protocols', {
+
+	headers2send = {
 		Upgrade: 'websocket',
 		Connection: 'Upgrade',
 		'Sec-WebSocket-Accept': key
-	}))
+	}
+
+	// subprotocols support
+	// https://tools.ietf.org/html/rfc6455#page-7
+	if( 'sec-websocket-protocol' in this.headers ){
+		protocol = this.headers['sec-websocket-protocol'];
+		this.protocols = protocol.split(',').map(function(v){return v.trim()});
+		headers2send['Sec-WebSocket-Protocol'] = protocol;
+	} else {
+		// No protocols - empty array
+		// No need to check on hi level for null/undefined
+		this.protocols = [];
+	}
+	this.socket.write(this.buildRequest('HTTP/1.1 101 Switching Protocols', headers2send))
 	return true
 }
 
