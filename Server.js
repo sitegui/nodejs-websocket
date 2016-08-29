@@ -12,10 +12,19 @@ var util = require('util'),
 	Connection
 
 /**
+ * @callback SelectProtocolCallback
+ * @param {Connection} connection
+ * @param {Array<string>} protocols
+ * @returns {?string}
+ */
+
+/**
  * Creates a new ws server and starts listening for new connections
  * @class
  * @param {boolean} secure indicates if it should use tls
  * @param {Object} [options] will be passed to net.createServer() or tls.createServer()
+ * @param {Array<string>} [options.validProtocols]
+ * @param {SelectProtocolCallback} [options.selectProtocol]
  * @param {Function} [callback] will be added as "connection" listener
  * @inherits EventEmitter
  * @event listening
@@ -67,6 +76,21 @@ function Server(secure, options, callback) {
 	if (callback) {
 		this.on('connection', callback)
 	}
+
+	// Add protocol agreement handling
+	/**
+	 * @member {?SelectProtocolCallback}
+	 * @private
+	 */
+	this._selectProtocol = null
+
+	if (options && options.selectProtocol) {
+		// User-provided logic
+		this._selectProtocol = options.selectProtocol
+	} else if (options && options.validProtocols) {
+		// Default logic
+		this._selectProtocol = this._buildSelectProtocol(options.validProtocols)
+	}
 }
 
 util.inherits(Server, events.EventEmitter)
@@ -110,4 +134,25 @@ Server.prototype.close = function (callback) {
 		this.once('close', callback)
 	}
 	this.socket.close()
+}
+
+/**
+ * Create a resolver to pick the client's most preferred protocol the server recognises
+ * @param {Array<string>} validProtocols
+ * @returns {SelectProtocolCallback}
+ * @private
+ */
+Server.prototype._buildSelectProtocol = function (validProtocols) {
+	return function (conn, protocols) {
+		var i
+
+		for (i = 0; i < protocols.length; i++) {
+			if (validProtocols.indexOf(protocols[i]) !== -1) {
+				// A valid protocol was found
+				return protocols[i]
+			}
+		}
+
+		// No agreement
+	}
 }

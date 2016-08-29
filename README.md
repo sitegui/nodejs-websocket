@@ -34,6 +34,10 @@ Returns a new `Server` object.
 The `options` is an optional object that will be handed to net.createServer() to create an ordinary socket.
 If it has a property called "secure" with value `true`, tls.createServer() will be used instead.
 
+To support protocols, the `options` object may have either of these properties:
+* `validProtocols`: an array of protocol names the server accepts. The server will pick the most preferred protocol in the client's list.
+* `selectProtocol`: a callback to resolve the protocol negotiation. This callback will be passed two parameters: the connection handling the handshake and the array of protocol names informed by the client, ordered by preference. It should return the resolved protocol, or empty if there is no agreement.
+
 The `callback` is a function which is automatically added to the `"connection"` event.
 
 ## ws.connect(URL, [options], [callback])
@@ -150,6 +154,16 @@ For a connection accepted by a server, it is a string representing the path to w
 
 ## connection.headers
 Read only map of header names and values. Header names are lower-cased
+
+## connection.protocols
+Array of protocols requested by the client. If no protocols were requested, it will be an empty array.
+
+Additional resources on websocket subprotocols:
+* [WebSocket Subprotocol Name Registry](http://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name)
+* [The WebSocket Protocol](https://tools.ietf.org/html/rfc6455#section-11.3.4)
+
+## connection.protocol
+The protocol agreed for this connection, if any. It will be an element of `connection.protocols`.
 
 ## Event: 'close(code, reason)'
 Emitted when the connection is closed by any side

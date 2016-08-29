@@ -42,6 +42,8 @@ function Connection(socket, parentOrUrl, callback) {
 		this.extraHeaders = parentOrUrl.extraHeaders
 	}
 
+	this.protocols = []
+	this.protocol = undefined
 	this.socket = socket
 	this.readyState = this.CONNECTING
 	this.buffer = new Buffer(0)
@@ -381,7 +383,7 @@ Connection.prototype.checkHandshake = function (lines) {
  * @private
  */
 Connection.prototype.answerHandshake = function (lines) {
-	var path, key, sha1
+	var path, key, sha1, headers
 
 	// First line
 	if (lines.length < 6) {
@@ -413,15 +415,33 @@ Connection.prototype.answerHandshake = function (lines) {
 
 	this.key = this.headers['sec-websocket-key']
 
+	// Agree on a protocol
+	if ('sec-websocket-protocol' in this.headers) {
+		// Parse
+		this.protocols = this.headers['sec-websocket-protocol'].split(',').map(function (each) {
+			return each.trim()
+		})
+
+		// Select protocol
+		if (this.server._selectProtocol) {
+			this.protocol = this.server._selectProtocol(this, this.protocols)
+		}
+	}
+
 	// Build and send the response
+
 	sha1 = crypto.createHash('sha1')
 	sha1.end(this.key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
 	key = sha1.read().toString('base64')
-	this.socket.write(this.buildRequest('HTTP/1.1 101 Switching Protocols', {
+	headers = {
 		Upgrade: 'websocket',
 		Connection: 'Upgrade',
 		'Sec-WebSocket-Accept': key
-	}))
+	}
+	if (this.protocol) {
+		headers['Sec-WebSocket-Protocol'] = this.protocol
+	}
+	this.socket.write(this.buildRequest('HTTP/1.1 101 Switching Protocols', headers))
 	return true
 }
 
