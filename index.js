@@ -35,21 +35,20 @@ exports.connect = function (URL, options, callback) {
 	}
 	options = options || {}
 
-	URL = parseWSURL(URL)
-	options.port = URL.port
-	options.host = URL.host
+	var connectionOptions = parseWSURL(URL)
+	options.port = connectionOptions.port
+	options.host = connectionOptions.host
 
-	if (options.hasOwnProperty('extraHeaders')) {
-		URL.extraHeaders = options.extraHeaders
-	}
+	connectionOptions.extraHeaders = options.extraHeaders
+	connectionOptions.protocols = options.protocols
 
-	if (URL.secure) {
+	if (connectionOptions.secure) {
 		socket = tls.connect(options)
 	} else {
 		socket = net.connect(options)
 	}
 
-	return new Connection(socket, URL, callback)
+	return new Connection(socket, connectionOptions, callback)
 }
 
 /**

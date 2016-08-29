@@ -47,7 +47,8 @@ Returns a new `Connection` object, representing a websocket client connection
 
 `options` is an object that will be passed to net.connect() (or tls.connect() if the protocol is "wss:").
 The properties "host" and "port" will be read from the `URL`.
-The property `extraHeaders` will be used to add more headers to the HTTP handshake request.
+The optional property `extraHeaders` will be used to add more headers to the HTTP handshake request. If present, it must be an object, like `{'X-My-Header': 'value'}`.
+The optional property `protocols` will be used in the handshake (as "Sec-WebSocket-Protocol" header) to allow the server to choose one of those values. If present, it must be an array of strings.
 
 `callback` will be added as "connect" listener
 

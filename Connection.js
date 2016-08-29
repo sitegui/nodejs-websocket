@@ -12,9 +12,17 @@ var util = require('util'),
 	Server = require('./Server')
 
 /**
+ * @typedef {Object} Connection~Options
+ * @param {string} path
+ * @param {string} host
+ * @param {?Object<string>} extraHeaders
+ * @param {?Array<string>} protocols
+ */
+
+/**
  * @class
  * @param {(net.Socket|tls.CleartextStream)} socket a net or tls socket
- * @param {(Server|{path:string,host:string})} parentOrUrl parent in case of server-side connection, url object in case of client-side
+ * @param {(Server|Connection~Options)} parentOrOptions parent in case of server-side connection,  object in case of client-side
  * @param {Function} [callback] will be added as a listener to 'connect'
  * @inherits EventEmitter
  * @event close the numeric code and string reason will be passed
@@ -24,25 +32,26 @@ var util = require('util'),
  * @event pong a string is passed
  * @event connect
  */
-function Connection(socket, parentOrUrl, callback) {
+function Connection(socket, parentOrOptions, callback) {
 	var that = this,
 		connectEvent
 
-	if (parentOrUrl instanceof Server) {
+	if (parentOrOptions instanceof Server) {
 		// Server-side connection
-		this.server = parentOrUrl
+		this.server = parentOrOptions
 		this.path = null
 		this.host = null
 		this.extraHeaders = null
+		this.protocols = []
 	} else {
 		// Client-side
 		this.server = null
-		this.path = parentOrUrl.path
-		this.host = parentOrUrl.host
-		this.extraHeaders = parentOrUrl.extraHeaders
+		this.path = parentOrOptions.path
+		this.host = parentOrOptions.host
+		this.extraHeaders = parentOrOptions.extraHeaders
+		this.protocols = parentOrOptions.protocols || []
 	}
 
-	this.protocols = []
 	this.protocol = undefined
 	this.socket = socket
 	this.readyState = this.CONNECTING
@@ -268,6 +277,10 @@ Connection.prototype.startHandshake = function () {
 		'Sec-WebSocket-Version': '13'
 	}
 
+	if (this.protocols && this.protocols.length) {
+		headers['Sec-WebSocket-Protocol'] = this.protocols.join(', ')
+	}
+
 	for (header in this.extraHeaders) {
 		headers[header] = this.extraHeaders[header]
 	}
@@ -342,7 +355,7 @@ Connection.prototype.readHeaders = function (lines) {
  * @private
  */
 Connection.prototype.checkHandshake = function (lines) {
-	var key, sha1
+	var key, sha1, protocol
 
 	// First line
 	if (lines.length < 4) {
@@ -366,6 +379,21 @@ Connection.prototype.checkHandshake = function (lines) {
 		return false
 	}
 	key = this.headers['sec-websocket-accept']
+
+	// Check protocol negotiation
+	protocol = this.headers['sec-websocket-protocol']
+	if (this.protocols && this.protocols.length) {
+		// The server must choose one from our list
+		if (!protocol || this.protocols.indexOf(protocol) === -1) {
+			return false
+		}
+	} else {
+		// The server must not choose a protocol
+		if (protocol) {
+			return false
+		}
+	}
+	this.protocol = protocol
 
 	// Check the key
 	sha1 = crypto.createHash('sha1')
