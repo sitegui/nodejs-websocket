@@ -302,7 +302,12 @@ Connection.prototype.readHandshake = function () {
 	// Do the handshake and try to connect
 	if (this.buffer.length > Connection.maxBufferLength) {
 		// Too big for a handshake
-		this.socket.end(this.server ? 'HTTP/1.1 400 Bad Request\r\n\r\n' : undefined)
+		if (this.server) {
+			this.socket.end('HTTP/1.1 400 Bad Request\r\n\r\n')
+		} else {
+			this.socket.end()
+			this.emit('error', new Error('Handshake is too big'))
+		}
 		return false
 	}
 
@@ -359,9 +364,11 @@ Connection.prototype.checkHandshake = function (lines) {
 
 	// First line
 	if (lines.length < 4) {
+		this.emit('error', new Error('Invalid handshake: too short'))
 		return false
 	}
 	if (!lines[0].match(/^HTTP\/\d\.\d 101( .*)?$/i)) {
+		this.emit('error', new Error('Invalid handshake: invalid first line format'))
 		return false
 	}
 
@@ -372,10 +379,12 @@ Connection.prototype.checkHandshake = function (lines) {
 	if (!('upgrade' in this.headers) ||
 		!('sec-websocket-accept' in this.headers) ||
 		!('connection' in this.headers)) {
+		this.emit('error', new Error('Invalid handshake: missing required headers'))
 		return false
 	}
 	if (this.headers.upgrade.toLowerCase() !== 'websocket' ||
 		this.headers.connection.toLowerCase().split(', ').indexOf('upgrade') === -1) {
+		this.emit('error', new Error('Invalid handshake: invalid Upgrade or Connection header'))
 		return false
 	}
 	key = this.headers['sec-websocket-accept']
@@ -385,11 +394,13 @@ Connection.prototype.checkHandshake = function (lines) {
 	if (this.protocols && this.protocols.length) {
 		// The server must choose one from our list
 		if (!protocol || this.protocols.indexOf(protocol) === -1) {
+			this.emit('error', new Error('Invalid handshake: no protocol was negotiated'))
 			return false
 		}
 	} else {
 		// The server must not choose a protocol
 		if (protocol) {
+			this.emit('error', new Error('Invalid handshake: no protocol negotiation was expected'))
 			return false
 		}
 	}
@@ -399,6 +410,7 @@ Connection.prototype.checkHandshake = function (lines) {
 	sha1 = crypto.createHash('sha1')
 	sha1.end(this.key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
 	if (key !== sha1.read().toString('base64')) {
+		this.emit('error', new Error('Invalid handshake: hash mismatch'))
 		return false
 	}
 	return true
@@ -457,7 +469,6 @@ Connection.prototype.answerHandshake = function (lines) {
 	}
 
 	// Build and send the response
-
 	sha1 = crypto.createHash('sha1')
 	sha1.end(this.key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
 	key = sha1.read().toString('base64')

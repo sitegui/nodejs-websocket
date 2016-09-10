@@ -170,7 +170,8 @@ The protocol agreed for this connection, if any. It will be an element of `conne
 Emitted when the connection is closed by any side
 
 ## Event: 'error(err)'
-Emitted in case of error (like trying to send text data while still sending binary data)
+Emitted in case of error (like trying to send text data while still sending binary data).
+In case of an invalid handshake response will also be emited.
 
 ## Event: 'text(str)'
 Emitted when a text is received. `str` is a string
