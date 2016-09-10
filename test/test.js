@@ -1,7 +1,7 @@
 /*globals describe, before, it, after*/
 'use strict'
 
-require('should')
+var should = require('should')
 var ws = require('../index')
 var net = require('net')
 
@@ -256,6 +256,138 @@ describe('close', function () {
 		testServer.once('close', function () {
 			called.should.be.true()
 			done()
+		})
+	})
+})
+
+describe('protocols negotiation', function () {
+	describe('with a server with no declared protocol support', function () {
+		var server
+		before(function (done) {
+			server = ws.createServer().listen(TEST_PORT, done)
+		})
+
+		after(function (done) {
+			server.close(done)
+		})
+
+		it('should fail when client tries to negotiate', function (done) {
+			var client = ws.connect('ws://localhost:' + TEST_PORT, {
+				protocols: ['x', 'y', 'b', 'a']
+			})
+			client.once('error', function (err) {
+				err.message.should.be.equal('Invalid handshake: no protocol was negotiated')
+				done()
+			})
+		})
+	})
+
+	describe('with a server with declared support list', function () {
+		var server, conn
+		before(function (done) {
+			server = ws.createServer({
+				validProtocols: ['a', 'b', 'c']
+			}, function (_conn) {
+				conn = _conn
+			}).listen(TEST_PORT, done)
+		})
+
+		after(function (done) {
+			server.close(done)
+		})
+
+		it('should succeed when client does not try to negotiate', function (done) {
+			conn = null
+			var client = ws.connect('ws://localhost:' + TEST_PORT, function () {
+				client.protocols.should.be.eql([])
+				should(client.protocol).be.undefined()
+				conn.protocols.should.be.eql([])
+				should(conn.protocol).be.undefined()
+				client.close()
+				done()
+			})
+		})
+
+		it('should succeed when client list at least one valid protocol', function (done) {
+			conn = null
+			var client = ws.connect('ws://localhost:' + TEST_PORT, {
+				protocols: ['x', 'y', 'b', 'a']
+			}, function () {
+				client.protocols.should.be.eql(['x', 'y', 'b', 'a'])
+				client.protocol.should.be.equal('b')
+				conn.protocols.should.be.eql(['x', 'y', 'b', 'a'])
+				conn.protocol.should.be.equal('b')
+				client.close()
+				done()
+			})
+		})
+
+		it('should fail when client list only invalid protocols', function (done) {
+			conn = null
+			var client = ws.connect('ws://localhost:' + TEST_PORT, {
+				protocols: ['x', 'y', 'z']
+			})
+			client.once('error', function (err) {
+				err.message.should.be.equal('Invalid handshake: no protocol was negotiated')
+				done()
+			})
+		})
+	})
+
+	describe('with a server with custom negotiation logic', function () {
+		var server, conn
+		before(function (done) {
+			server = ws.createServer({
+				selectProtocol: function (conn, protocols) {
+					conn.protocols.should.be.equal(protocols)
+					if (protocols[0].match(/please/)) {
+						return protocols[0]
+					}
+				}
+			}, function (_conn) {
+				conn = _conn
+			}).listen(TEST_PORT, done)
+		})
+
+		after(function (done) {
+			server.close(done)
+		})
+
+		it('should succeed when client does not try to negotiate', function (done) {
+			conn = null
+			var client = ws.connect('ws://localhost:' + TEST_PORT, function () {
+				client.protocols.should.be.eql([])
+				should(client.protocol).be.undefined()
+				conn.protocols.should.be.eql([])
+				should(conn.protocol).be.undefined()
+				client.close()
+				done()
+			})
+		})
+
+		it('should succeed when client list at least one valid protocol', function (done) {
+			conn = null
+			var client = ws.connect('ws://localhost:' + TEST_PORT, {
+				protocols: ['do-it-please']
+			}, function () {
+				client.protocols.should.be.eql(['do-it-please'])
+				client.protocol.should.be.equal('do-it-please')
+				conn.protocols.should.be.eql(['do-it-please'])
+				conn.protocol.should.be.equal('do-it-please')
+				client.close()
+				done()
+			})
+		})
+
+		it('should fail when client list only invalid protocols', function (done) {
+			conn = null
+			var client = ws.connect('ws://localhost:' + TEST_PORT, {
+				protocols: ['do-it-now']
+			})
+			client.once('error', function (err) {
+				err.message.should.be.equal('Invalid handshake: no protocol was negotiated')
+				done()
+			})
 		})
 	})
 })
