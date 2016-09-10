@@ -1,3 +1,10 @@
+# 1.7.0
+* Added: emit `Connection#error` event on invalid handshake response with the reason why it was rejected
+* Added: support for protocol negotiation
+* Added: `validProtocols` and `selectProtocol` options to `ws.createServer()`
+* Added: `protocols` option to `ws.connect`
+* Added: `Connection#protocols` and `Connection#protocol`
+
 # 1.6.0
 * Added: `Server#close` as a short hand for `Server#socket.close`
 
