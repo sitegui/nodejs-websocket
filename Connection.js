@@ -142,8 +142,9 @@ Connection.prototype.sendText = function (str, callback) {
 			return this.socket.write(frame.createTextFrame(str, !this.server), callback)
 		}
 		this.emit('error', new Error('You can\'t send a text frame until you finish sending binary frames'))
+	} else {
+		this.emit('error', new Error('You can\'t write to a non-open connection'))
 	}
-	this.emit('error', new Error('You can\'t write to a non-open connection'))
 }
 
 /**
@@ -156,8 +157,9 @@ Connection.prototype.beginBinary = function () {
 			return (this.outStream = new OutStream(this, Connection.binaryFragmentation))
 		}
 		this.emit('error', new Error('You can\'t send more binary frames until you finish sending the previous binary frames'))
+	} else {
+		this.emit('error', new Error('You can\'t write to a non-open connection'))
 	}
-	this.emit('error', new Error('You can\'t write to a non-open connection'))
 }
 
 /**
@@ -171,8 +173,9 @@ Connection.prototype.sendBinary = function (data, callback) {
 			return this.socket.write(frame.createBinaryFrame(data, !this.server, true, true), callback)
 		}
 		this.emit('error', new Error('You can\'t send more binary frames until you finish sending the previous binary frames'))
+	} else {
+		this.emit('error', new Error('You can\'t write to a non-open connection'))
 	}
-	this.emit('error', new Error('You can\'t write to a non-open connection'))
 }
 
 /**
@@ -198,8 +201,9 @@ Connection.prototype.send = function (data, callback) {
 Connection.prototype.sendPing = function (data) {
 	if (this.readyState === this.OPEN) {
 		return this.socket.write(frame.createPingFrame(data || '', !this.server))
+	} else {
+		this.emit('error', new Error('You can\'t write to a non-open connection'))
 	}
-	this.emit('error', new Error('You can\'t write to a non-open connection'))
 }
 
 /**
