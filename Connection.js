@@ -267,9 +267,12 @@ Connection.prototype.doRead = function () {
  * @private
  */
 Connection.prototype.startHandshake = function () {
-	var str, i, headers, header
-	this.key = (new Buffer((Math.random()*1024).toString(), 'binary')).toString('base64')
-
+	var str, i, key, headers, header
+	key = new Buffer(16)
+	for (i = 0; i < 16; i++) {
+		key[i] = Math.floor(Math.random() * 256)
+	}
+	this.key = key.toString('base64')
 	headers = {
 		Host: this.host,
 		Upgrade: 'websocket',
