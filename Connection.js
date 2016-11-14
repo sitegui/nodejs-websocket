@@ -200,7 +200,7 @@ Connection.prototype.send = function (data, callback) {
  */
 Connection.prototype.sendPing = function (data) {
 	if (this.readyState === this.OPEN) {
-		return this.socket.write(frame.createPingFrame(data || '', !this.server))
+		this.socket.write(frame.createPingFrame(data || '', !this.server))
 	} else {
 		this.emit('error', new Error('You can\'t write to a non-open connection'))
 	}

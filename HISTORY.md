@@ -1,3 +1,6 @@
+# 1.7.1
+* Fixed: two errors were emitted when trying to sendText to a closed connection while there was another pending binary write operation.
+
 # 1.7.0
 * Added: emit `Connection#error` event on invalid handshake response with the reason why it was rejected
 * Added: support for protocol negotiation
