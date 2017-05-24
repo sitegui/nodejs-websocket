@@ -387,7 +387,7 @@ Connection.prototype.checkHandshake = function (lines) {
 		return false
 	}
 	if (this.headers.upgrade.toLowerCase() !== 'websocket' ||
-		this.headers.connection.toLowerCase().split(', ').indexOf('upgrade') === -1) {
+		this.headers.connection.toLowerCase().split(/\s*,\s*/).indexOf('upgrade') === -1) {
 		this.emit('error', new Error('Invalid handshake: invalid Upgrade or Connection header'))
 		return false
 	}
@@ -450,7 +450,7 @@ Connection.prototype.answerHandshake = function (lines) {
 		return false
 	}
 	if (this.headers.upgrade.toLowerCase() !== 'websocket' ||
-		this.headers.connection.toLowerCase().split(', ').indexOf('upgrade') === -1) {
+		this.headers.connection.toLowerCase().split(/\s*,\s*/).indexOf('upgrade') === -1) {
 		return false
 	}
 	if (this.headers['sec-websocket-version'] !== '13') {
