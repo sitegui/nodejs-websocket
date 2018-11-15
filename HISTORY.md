@@ -1,3 +1,8 @@
+# 1.7.2
+* Fixed: parsing error when `Connection` header uses ',' instead of ', ' (with space) [#46](https://github.com/sitegui/nodejs-websocket/pull/46)
+* Fixed: uses Buffer.alloc and Buffer.from instead of new Buffer
+* Changed: Drop support for Node v0.12
+
 # 1.7.1
 * Fixed: two errors were emitted when trying to sendText to a closed connection while there was another pending binary write operation.
 
