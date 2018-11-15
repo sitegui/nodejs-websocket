@@ -16,7 +16,7 @@ function OutStream(connection, minSize) {
 	var that = this
 	this.connection = connection
 	this.minSize = minSize
-	this.buffer = new Buffer(0)
+	this.buffer = Buffer.alloc(0)
 	this.hasSent = false // Indicates if any frame has been sent yet
 	stream.Writable.call(this)
 	this.on('finish', function () {
@@ -48,7 +48,7 @@ OutStream.prototype._write = function (chunk, encoding, callback) {
 			frameBuffer = frame.createBinaryFrame(this.buffer, !this.connection.server, !this.hasSent, false)
 			this.connection.socket.write(frameBuffer, encoding, callback)
 		}
-		this.buffer = new Buffer(0)
+		this.buffer = Buffer.alloc(0)
 		this.hasSent = true
 		if (this.connection.readyState !== this.connection.OPEN) {
 			callback()

@@ -13,7 +13,7 @@
 exports.createTextFrame = function (data, masked) {
 	var payload, meta
 
-	payload = new Buffer(data)
+	payload = Buffer.from(data)
 	meta = generateMetaData(true, 1, masked === undefined ? false : masked, payload)
 
 	return Buffer.concat([meta, payload], meta.length + payload.length)
@@ -34,7 +34,7 @@ exports.createBinaryFrame = function (data, masked, first, fin) {
 	first = first === undefined ? true : first
 	masked = masked === undefined ? false : masked
 	if (masked) {
-		payload = new Buffer(data.length)
+		payload = Buffer.alloc(data.length)
 		data.copy(payload)
 	} else {
 		payload = data
@@ -56,10 +56,10 @@ exports.createCloseFrame = function (code, reason, masked) {
 	var payload, meta
 
 	if (code !== undefined && code !== 1005) {
-		payload = new Buffer(reason === undefined ? '--' : '--' + reason)
+		payload = Buffer.from(reason === undefined ? '--' : '--' + reason)
 		payload.writeUInt16BE(code, 0)
 	} else {
-		payload = new Buffer(0)
+		payload = Buffer.alloc(0)
 	}
 	meta = generateMetaData(true, 8, masked === undefined ? false : masked, payload)
 
@@ -76,7 +76,7 @@ exports.createCloseFrame = function (code, reason, masked) {
 exports.createPingFrame = function (data, masked) {
 	var payload, meta
 
-	payload = new Buffer(data)
+	payload = Buffer.from(data)
 	meta = generateMetaData(true, 9, masked === undefined ? false : masked, payload)
 
 	return Buffer.concat([meta, payload], meta.length + payload.length)
@@ -92,7 +92,7 @@ exports.createPingFrame = function (data, masked) {
 exports.createPongFrame = function (data, masked) {
 	var payload, meta
 
-	payload = new Buffer(data)
+	payload = Buffer.from(data)
 	meta = generateMetaData(true, 10, masked === undefined ? false : masked, payload)
 
 	return Buffer.concat([meta, payload], meta.length + payload.length)
@@ -114,7 +114,7 @@ function generateMetaData(fin, opcode, masked, payload) {
 	len = payload.length
 
 	// Creates the buffer for meta-data
-	meta = new Buffer(2 + (len < 126 ? 0 : (len < 65536 ? 2 : 8)) + (masked ? 4 : 0))
+	meta = Buffer.alloc(2 + (len < 126 ? 0 : (len < 65536 ? 2 : 8)) + (masked ? 4 : 0))
 
 	// Sets fin and opcode
 	meta[0] = (fin ? 128 : 0) + opcode
@@ -138,7 +138,7 @@ function generateMetaData(fin, opcode, masked, payload) {
 
 	// Set the mask-key
 	if (masked) {
-		mask = new Buffer(4)
+		mask = Buffer.alloc(4)
 		for (i = 0; i < 4; i++) {
 			meta[start + i] = mask[i] = Math.floor(Math.random() * 256)
 		}

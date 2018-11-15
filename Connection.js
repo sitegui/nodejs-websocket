@@ -55,7 +55,7 @@ function Connection(socket, parentOrOptions, callback) {
 	this.protocol = undefined
 	this.socket = socket
 	this.readyState = this.CONNECTING
-	this.buffer = new Buffer(0)
+	this.buffer = Buffer.alloc(0)
 	this.frameBuffer = null // string for text frames and InStream for binary frames
 	this.outStream = null // current allocated OutStream object for sending binary frames
 	this.key = null // the Sec-WebSocket-Key header
@@ -268,7 +268,7 @@ Connection.prototype.doRead = function () {
  */
 Connection.prototype.startHandshake = function () {
 	var str, i, key, headers, header
-	key = new Buffer(16)
+	key = Buffer.alloc(16)
 	for (i = 0; i < 16; i++) {
 		key[i] = Math.floor(Math.random() * 256)
 	}

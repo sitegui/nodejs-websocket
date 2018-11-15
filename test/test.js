@@ -165,7 +165,7 @@ describe('frames', function () {
 		var client = getClient(),
 			expected = 'text frame',
 			textData = 'text data',
-			binaryData = new Buffer('binary data')
+			binaryData = Buffer.from('binary data')
 
 		// Use send() for text and binary
 		client.send(textData)
@@ -220,6 +220,7 @@ describe('handshake', function () {
 			'C: 3\r\n' +
 			'D: 4\r\n' +
 			'E: 5\r\n\r\n')
+		conn.resume()
 		conn.once('close', function () {
 			done()
 		})
@@ -398,7 +399,7 @@ function getClient() {
 }
 
 function getBuffer(size) {
-	var buffer = new Buffer(size),
+	var buffer = Buffer.alloc(size),
 		i
 	for (i = 0; i < size; i++) {
 		buffer[i] = i % 256

@@ -183,7 +183,7 @@ var server = ws.createServer(function (conn) {
 	console.log("New connection")
 	conn.on("binary", function (inStream) {
 		// Empty buffer for collecting binary data
-		var data = new Buffer(0)
+		var data = Buffer.alloc(0)
 		// Read chunks of binary data and add to the buffer
 		inStream.on("readable", function () {
 		    var newData = inStream.read()
