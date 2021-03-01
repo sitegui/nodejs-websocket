@@ -7,23 +7,23 @@ A nodejs module for websocket server and client
 
 # How to use it
 Install with `npm install nodejs-websocket` or put all files in a folder called "nodejs-websocket", and:
-```javascript
+```js
 var ws = require("nodejs-websocket")
 
 // Scream server example: "hi" -> "HI!!!"
-var server = ws.createServer(function (conn) {
+const server = ws.createServer(conn => {
 	console.log("New connection")
-	conn.on("text", function (str) {
+	conn.on("text", str => {
 		console.log("Received "+str)
 		conn.sendText(str.toUpperCase()+"!!!")
 	})
-	conn.on("close", function (code, reason) {
+	conn.on("close", (code, reason) => {
 		console.log("Connection closed")
 	})
 }).listen(8001)
 ```
 
-Se other examples inside the folder samples
+See other examples inside the folder samples
 
 # ws
 The main object, returned by `require("nodejs-websocket")`.
@@ -82,7 +82,7 @@ The underlying socket, returned by net.createServer or tls.createServer
 An Array with all connected clients. It's useful for broadcasting a message:
 ```javascript
 function broadcast(server, msg) {
-	server.connections.forEach(function (conn) {
+	server.connections.forEach(conn => {
 		conn.sendText(msg)
 	})
 }
@@ -178,24 +178,24 @@ Emitted when a text is received. `str` is a string
 
 ## Event: 'binary(inStream)'
 Emitted when the beginning of binary data is received. `inStream` is a [ReadableStream](https://nodejs.org/api/stream.html#stream_class_stream_readable):
-```javascript
-var server = ws.createServer(function (conn) {
+```js
+var server = ws.createServer(conn => {
 	console.log("New connection")
-	conn.on("binary", function (inStream) {
+	conn.on("binary", inStream => {
 		// Empty buffer for collecting binary data
-		var data = Buffer.alloc(0)
+		let data = Buffer.alloc(0)
 		// Read chunks of binary data and add to the buffer
-		inStream.on("readable", function () {
-		    var newData = inStream.read()
+		inStream.on("readable", () => {
+		    const newData = inStream.read()
 		    if (newData)
 		        data = Buffer.concat([data, newData], data.length+newData.length)
 		})
-		inStream.on("end", function () {
+		inStream.on("end", () => {
 			console.log("Received " + data.length + " bytes of binary data")
 		    process_my_data(data)
 		})
 	})
-	conn.on("close", function (code, reason) {
+	conn.on("close", (code, reason) => {
 		console.log("Connection closed")
 	})
 }).listen(8001)
