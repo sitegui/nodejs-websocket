@@ -25,6 +25,7 @@ var util = require('util'),
  * @param {Object} [options] will be passed to net.createServer() or tls.createServer()
  * @param {Array<string>} [options.validProtocols]
  * @param {SelectProtocolCallback} [options.selectProtocol]
+ * @param {net.Server} [options.server]
  * @param {Function} [callback] will be added as "connection" listener
  * @inherits EventEmitter
  * @event listening
@@ -57,7 +58,12 @@ function Server(secure, options, callback) {
 		conn.on('error', nop)
 	}
 
-	if (secure) {
+	if (options && options.server instanceof net.Server) {
+		this.socket = options.server
+		// Listening to upgrade is required for http.Server not closing connection
+		this.socket.on('upgrade', nop)
+		this.socket.on('connection', onConnection)
+	} else if (secure) {
 		this.socket = tls.createServer(options, onConnection)
 	} else {
 		this.socket = net.createServer(options, onConnection)
